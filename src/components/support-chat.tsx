@@ -12,7 +12,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
-import { Send, Loader2, Lifebuoy } from 'lucide-react';
+import { Send, Loader2, LifeBuoy } from 'lucide-react';
 import { useEffect, useRef, useState, useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
 
@@ -90,7 +90,7 @@ export function SupportChat({ currentUser }: SupportChatProps) {
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
         <div className="p-4 border-b text-center bg-muted/50">
-            <h3 className="font-headline flex items-center justify-center gap-2 text-lg"><Lifebuoy className="text-primary"/> Support Chat</h3>
+            <h3 className="font-headline flex items-center justify-center gap-2 text-lg"><LifeBuoy className="text-primary"/> Support Chat</h3>
             <p className="text-sm text-muted-foreground">Have a question? Ask an admin.</p>
         </div>
         <div className="flex-1 overflow-auto">
@@ -115,7 +115,7 @@ export function SupportChat({ currentUser }: SupportChatProps) {
                     >
                     {message.senderId !== currentUser.id && (
                         <Avatar className="h-8 w-8 bg-primary text-primary-foreground">
-                            <Lifebuoy className="m-1.5"/>
+                            <LifeBuoy className="m-1.5"/>
                             <AvatarFallback>AD</AvatarFallback>
                         </Avatar>
                     )}

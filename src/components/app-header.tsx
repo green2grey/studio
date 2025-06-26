@@ -21,7 +21,7 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog"
 import { logoutAction, updateAvatarAction } from "@/app/actions";
-import { LogOut, Shield, User as UserIcon, Lifebuoy } from "lucide-react";
+import { LogOut, Shield, User as UserIcon, LifeBuoy } from "lucide-react";
 import Link from "next/link";
 import { useState, useActionState, useEffect } from "react";
 import { predefinedAvatars } from "@/lib/data";
@@ -130,7 +130,7 @@ export function AppHeader({ user, onContactSupportClick }: AppHeaderProps) {
               <DropdownMenuSeparator />
               <ChangeAvatarDialog user={user} />
                <DropdownMenuItem onSelect={onContactSupportClick} className="cursor-pointer">
-                <Lifebuoy className="mr-2 h-4 w-4" />
+                <LifeBuoy className="mr-2 h-4 w-4" />
                 <span>Contact Support</span>
               </DropdownMenuItem>
               {user.role === 'admin' && (

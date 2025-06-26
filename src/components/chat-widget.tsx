@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/sheet';
 import { DepartmentChat } from '@/components/department-chat';
 import { SupportChat } from '@/components/support-chat';
-import { MessageCircle, Lifebuoy } from 'lucide-react';
+import { MessageCircle, LifeBuoy } from 'lucide-react';
 import type { User, Department } from '@/lib/data';
 import { cn } from '@/lib/utils';
 
@@ -74,7 +74,7 @@ export function ChatWidget({
               variant={activeChat === 'support' ? 'default' : 'outline'}
               onClick={() => setActiveChat('support')}
             >
-              <Lifebuoy className="mr-2 h-4 w-4" />
+              <LifeBuoy className="mr-2 h-4 w-4" />
               Support
             </Button>
           </div>
