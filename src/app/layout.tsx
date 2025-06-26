@@ -3,7 +3,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 
 export const metadata: Metadata = {
-  title: 'StrideSync',
+  title: 'Olive View Wellness',
   description: 'A competitive steps challenge app for work departments.',
 };
 
