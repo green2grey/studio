@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/accordion';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Badge } from './ui/badge';
-import { useActionState, useEffect, useRef, useState } from 'react';
+import { useActionState, useEffect, useRef } from 'react';
 import { sendAdminSupportReplyAction } from '@/app/actions';
 import { useFormStatus } from 'react-dom';
 import { Button } from './ui/button';
@@ -65,7 +65,7 @@ function ReplyForm({ userId }: { userId: string }) {
   );
 }
 
-function Message({ message }: { message: SupportMessage }) {
+function Message({ message }: { message: SupportMessage & { userAvatar?: string } }) {
     const isAdmin = message.senderId === 'admin';
     return (
         <div className={cn(
@@ -74,7 +74,7 @@ function Message({ message }: { message: SupportMessage }) {
         )}>
             {!isAdmin && (
                 <Avatar className="h-8 w-8 border">
-                    <AvatarImage src={(message as any).userAvatar} />
+                    <AvatarImage src={message.userAvatar} />
                     <AvatarFallback>{message.senderName.slice(0, 2)}</AvatarFallback>
                 </Avatar>
             )}
@@ -96,13 +96,8 @@ function Message({ message }: { message: SupportMessage }) {
     )
 }
 
-export function SupportTickets({ initialThreads }: SupportTicketsProps) {
-  const [threads, setThreads] = useState(initialThreads);
-
-  useEffect(() => {
-    setThreads(initialThreads);
-  }, [initialThreads]);
-
+export function SupportTickets({ initialThreads: threads }: SupportTicketsProps) {
+  
   if (threads.length === 0) {
     return (
       <div className="text-center text-muted-foreground py-10">
