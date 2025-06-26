@@ -1,14 +1,11 @@
 'use server';
 
 import { getPersonalizedMotivation, PersonalizedMotivationInput } from '@/ai/flows/personalized-motivation';
-import { users as usersDB, pendingVerifications, User, messages as messagesDB, Message, predefinedAvatars, supportThreads, SupportThread, SupportMessage } from '@/lib/data';
+import { users, pendingVerifications, User, messages, Message, predefinedAvatars, supportThreads, SupportThread, SupportMessage } from '@/lib/data';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { getAuth } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
-
-let users = usersDB;
-let messages = messagesDB;
 
 export async function getMotivationAction(input: PersonalizedMotivationInput) {
     try {
@@ -154,12 +151,12 @@ export async function deleteUserAction(userId: string) {
         return { success: false, error: "Admins cannot delete their own account." };
     }
     
-    const initialLength = users.length;
-    users = users.filter(u => u.id !== userId);
-
-    if (users.length === initialLength) {
+    const userIndex = users.findIndex(u => u.id === userId);
+    if (userIndex === -1) {
         return { success: false, error: "User not found." };
     }
+
+    users.splice(userIndex, 1);
 
     return { success: true };
 }
