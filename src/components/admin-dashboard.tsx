@@ -15,6 +15,7 @@ import { UserManagement } from '@/components/user-management';
 import { SupportTickets } from '@/components/support-tickets';
 import { DepartmentManagement } from './department-management';
 import { CreateUserDialog } from './create-user-dialog';
+import { cn } from '@/lib/utils';
 
 type UserWithDept = User & { departmentName: string };
 
@@ -48,14 +49,19 @@ export function AdminDashboard({
   
   return (
     <Tabs defaultValue="users" className="w-full">
-      <TabsList className="grid w-full grid-cols-3">
+      <TabsList className={cn(
+        "grid w-full",
+        adminUser.role === 'admin' ? "grid-cols-3" : "grid-cols-2"
+      )}>
         <TabsTrigger value="users">User Management</TabsTrigger>
         <TabsTrigger value="tickets">Support Tickets</TabsTrigger>
-        <TabsTrigger value="departments">Departments</TabsTrigger>
+        {adminUser.role === 'admin' && (
+            <TabsTrigger value="departments">Departments</TabsTrigger>
+        )}
       </TabsList>
       <TabsContent value="users" className="mt-4">
         <div className="flex justify-end mb-4">
-            <CreateUserDialog departments={departments} />
+            <CreateUserDialog departments={departments} adminUser={adminUser} />
         </div>
         <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
           <Table>
@@ -80,9 +86,11 @@ export function AdminDashboard({
       <TabsContent value="tickets" className="mt-4">
         <SupportTickets initialThreads={initialThreads} />
       </TabsContent>
-      <TabsContent value="departments" className="mt-4">
-        <DepartmentManagement initialDepartments={departments} />
-      </TabsContent>
+       {adminUser.role === 'admin' && (
+        <TabsContent value="departments" className="mt-4">
+            <DepartmentManagement initialDepartments={departments} />
+        </TabsContent>
+       )}
     </Tabs>
   );
 }

@@ -25,7 +25,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 import { Terminal, Loader2, UserPlus } from 'lucide-react';
-import type { Department } from '@/lib/data';
+import type { Department, User } from '@/lib/data';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -43,8 +43,10 @@ function SubmitButton() {
 
 export function CreateUserDialog({
   departments,
+  adminUser,
 }: {
   departments: Department[];
+  adminUser: User;
 }) {
   const [open, setOpen] = useState(false);
   const [state, formAction] = useActionState(adminCreateUserAction, null);
@@ -117,6 +119,21 @@ export function CreateUserDialog({
               </SelectContent>
             </Select>
           </div>
+          {adminUser.role === 'admin' && (
+            <div className="space-y-2">
+              <Label htmlFor="role">Role</Label>
+              <Select name="role" defaultValue="user" required>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="user">User</SelectItem>
+                  <SelectItem value="manager">Manager</SelectItem>
+                  <SelectItem value="admin">Admin</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
           {state && !state.success && state.error && (
             <Alert variant="destructive">
               <Terminal className="h-4 w-4" />

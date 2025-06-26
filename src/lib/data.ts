@@ -9,7 +9,7 @@ export interface User {
   };
   dailyGoal: number;
   departmentId: string;
-  role?: 'admin' | 'user';
+  role?: 'admin' | 'manager' | 'user';
   mustChangePassword?: boolean;
   password?: string;
 }
@@ -86,8 +86,8 @@ if (!global.__users) {
     { id: 'brianna.smith@dhs.lacounty.gov', name: 'Brianna Smith', password: 'password123', avatar: predefinedAvatars[1], steps: { daily: 12345, weekly: 61234, total: 123450 }, dailyGoal: 8000, departmentId: 'eng', role: 'user' },
     { id: 'charlie.brown@dhs.lacounty.gov', name: 'Charlie Brown', password: 'password123', avatar: predefinedAvatars[2], steps: { daily: 7654, weekly: 38901, total: 76540 }, dailyGoal: 9000, departmentId: 'eng', role: 'user' },
   
-    // Marketing
-    { id: 'diana.prince@dhs.lacounty.gov', name: 'Diana Prince', password: 'password123', avatar: predefinedAvatars[3], steps: { daily: 15234, weekly: 78901, total: 152340 }, dailyGoal: 12000, departmentId: 'mkt', role: 'user' },
+    // Marketing - Diana is a Manager
+    { id: 'diana.prince@dhs.lacounty.gov', name: 'Diana Prince', password: 'password123', avatar: predefinedAvatars[3], steps: { daily: 15234, weekly: 78901, total: 152340 }, dailyGoal: 12000, departmentId: 'mkt', role: 'manager' },
     { id: 'ethan.hunt@dhs.lacounty.gov', name: 'Ethan Hunt', password: 'password123', avatar: predefinedAvatars[4], steps: { daily: 6789, weekly: 34567, total: 67890 }, dailyGoal: 7000, departmentId: 'mkt', role: 'user' },
     { id: 'fiona.glenanne@dhs.lacounty.gov', name: 'Fiona Glenanne', password: 'password123', avatar: predefinedAvatars[5], steps: { daily: 9876, weekly: 50123, total: 98760 }, dailyGoal: 10000, departmentId: 'mkt', role: 'user' },
   

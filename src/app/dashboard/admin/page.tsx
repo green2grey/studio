@@ -7,7 +7,7 @@ import { getAllSupportThreadsAction } from '@/app/actions';
 export default async function AdminPage() {
   const { currentUser } = await getAuth();
 
-  if (currentUser?.role !== 'admin') {
+  if (currentUser?.role !== 'admin' && currentUser?.role !== 'manager') {
     redirect('/dashboard');
   }
 

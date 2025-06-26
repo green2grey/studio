@@ -3,7 +3,7 @@
 import type { Department, User } from '@/lib/data';
 import { useActionState, useEffect, useRef, useState } from 'react';
 import { useFormStatus } from 'react-dom';
-import { adminUpdateUserDepartmentAction } from '@/app/actions';
+import { adminUpdateUserAction } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -49,7 +49,7 @@ export function EditUserDialog({
 }) {
   const [open, setOpen] = useState(false);
   const [state, formAction] = useActionState(
-    adminUpdateUserDepartmentAction,
+    adminUpdateUserAction,
     null
   );
   const formRef = useRef<HTMLFormElement>(null);
@@ -59,9 +59,16 @@ export function EditUserDialog({
     if (state?.success) {
       toast({
         title: 'User Updated',
-        description: `${user.name}'s department has been changed.`,
+        description: `${user.name}'s profile has been updated.`,
       });
       setOpen(false);
+    }
+     if (state?.error) {
+      toast({
+        variant: 'destructive',
+        title: 'Error updating user',
+        description: state.error,
+      });
     }
   }, [state, toast, user.name]);
 
@@ -80,7 +87,7 @@ export function EditUserDialog({
         <DialogHeader>
           <DialogTitle>Edit {user.name}</DialogTitle>
           <DialogDescription>
-            Change the user's assigned department.
+            Change the user's assigned department or role.
           </DialogDescription>
         </DialogHeader>
         <form action={formAction} ref={formRef} className="space-y-4 py-2">
@@ -98,6 +105,19 @@ export function EditUserDialog({
                   </SelectItem>
                 ))}
               </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="role">Role</Label>
+            <Select name="role" defaultValue={user.role} required>
+                <SelectTrigger>
+                    <SelectValue placeholder="Select a role" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="user">User</SelectItem>
+                    <SelectItem value="manager">Manager</SelectItem>
+                    <SelectItem value="admin">Admin</SelectItem>
+                </SelectContent>
             </Select>
           </div>
           {state && !state.success && state.error && (

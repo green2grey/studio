@@ -10,7 +10,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import {
@@ -23,7 +22,7 @@ import {
 import { TableCell, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
 import type { User, Department } from '@/lib/data';
-import { KeyRound, MoreHorizontal, Trash2, UserCog } from 'lucide-react';
+import { KeyRound, MoreHorizontal, Trash2 } from 'lucide-react';
 import { EditUserDialog } from './edit-user-dialog';
 
 type UserWithDept = User & { departmentName: string };
@@ -85,7 +84,7 @@ export function UserManagement({ users, onUserDeleted, adminUser, departments }:
             {user.steps.total.toLocaleString()}
           </TableCell>
           <TableCell>
-            {user.id !== adminUser.id && (
+            {user.id !== adminUser.id && adminUser.role === 'admin' && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="h-8 w-8 p-0">
@@ -111,7 +110,7 @@ export function UserManagement({ users, onUserDeleted, adminUser, departments }:
                         <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                         <AlertDialogDescription>
                           This will reset the user's password to a default
-                          value. This action cannot be undone.
+                          value and require them to change it on next login. This action cannot be undone.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>

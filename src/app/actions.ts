@@ -1,7 +1,7 @@
 'use server';
 
 import { getPersonalizedMotivation, PersonalizedMotivationInput } from '@/ai/flows/personalized-motivation';
-import { users, pendingVerifications, User, messages, Message, predefinedAvatars, supportThreads, SupportThread, SupportMessage, departments } from '@/lib/data';
+import { users, pendingVerifications, User, messages, Message, predefinedAvatars, supportThreads, SupportThread, SupportMessage, departments, Department } from '@/lib/data';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { getAuth } from '@/lib/auth';
@@ -175,7 +175,7 @@ export async function updatePasswordAction(prevState: unknown, data: FormData) {
 // Admin Actions
 export async function adminCreateUserAction(prevState: unknown, data: FormData) {
     const { currentUser } = await getAuth();
-    if (currentUser?.role !== 'admin') {
+    if (currentUser?.role !== 'admin' && currentUser?.role !== 'manager') {
         return { success: false, error: 'Unauthorized action.' };
     }
 
@@ -184,6 +184,7 @@ export async function adminCreateUserAction(prevState: unknown, data: FormData) 
     const email = data.get('email') as string;
     const password = data.get('password') as string;
     const departmentId = data.get('departmentId') as string;
+    const role = data.get('role') as 'user' | 'manager' | 'admin';
 
     if (!firstName || !lastName || !email || !password || !departmentId) {
         return { success: false, error: 'All fields are required.' };
@@ -193,6 +194,12 @@ export async function adminCreateUserAction(prevState: unknown, data: FormData) 
         return { success: false, error: 'User with this email already exists.' };
     }
     
+    let newUserRole: 'user' | 'manager' | 'admin' = 'user';
+    // Only admins can assign roles. Managers can only create users.
+    if (currentUser.role === 'admin' && role) {
+        newUserRole = role;
+    }
+
     const randomAvatar = predefinedAvatars[Math.floor(Math.random() * predefinedAvatars.length)];
 
     const newUser: User & { password?: string } = {
@@ -203,7 +210,7 @@ export async function adminCreateUserAction(prevState: unknown, data: FormData) 
         avatar: randomAvatar,
         steps: { daily: 0, weekly: 0, total: 0 },
         dailyGoal: 10000,
-        role: 'user',
+        role: newUserRole,
         mustChangePassword: true,
     };
 
@@ -238,7 +245,7 @@ export async function adminCreateDepartmentAction(prevState: unknown, data: Form
     return { success: true };
 }
 
-export async function adminUpdateUserDepartmentAction(prevState: unknown, data: FormData) {
+export async function adminUpdateUserAction(prevState: unknown, data: FormData) {
     const { currentUser } = await getAuth();
     if (currentUser?.role !== 'admin') {
         return { success: false, error: 'Unauthorized action.' };
@@ -246,17 +253,29 @@ export async function adminUpdateUserDepartmentAction(prevState: unknown, data: 
     
     const userId = data.get('userId') as string;
     const departmentId = data.get('departmentId') as string;
+    const role = data.get('role') as 'user' | 'manager' | 'admin';
 
-    if (!userId || !departmentId) {
-        return { success: false, error: 'User and department are required.' };
+    if (!userId || !departmentId || !role) {
+        return { success: false, error: 'User, department, and role are required.' };
     }
     
     const userIndex = users.findIndex(u => u.id === userId);
     if (userIndex === -1) {
         return { success: false, error: 'User not found.' };
     }
+    
+    // Prevent admin from demoting themselves if they are the only admin
+    if (users[userIndex].id === currentUser.id && users[userIndex].role === 'admin' && role !== 'admin') {
+        const adminCount = users.filter(u => u.role === 'admin').length;
+        if (adminCount <= 1) {
+            return { success: false, error: 'Cannot remove the last admin account.' };
+        }
+    }
+
 
     users[userIndex].departmentId = departmentId;
+    users[userIndex].role = role;
+
     revalidatePath('/dashboard/admin');
     revalidatePath('/dashboard'); // for leaderboards
     return { success: true };
@@ -295,6 +314,7 @@ export async function resetPasswordAction(userId: string) {
     
     const newPassword = 'password123'; // Reset to a default password
     users[userIndex].password = newPassword;
+    users[userIndex].mustChangePassword = true;
 
     console.log(`Password for user ${userId} has been reset to "${newPassword}"`);
 
@@ -429,8 +449,8 @@ export async function sendSupportMessageAction(prevState: unknown, formData: For
 
 // Admin Support Actions
 export async function getAllSupportThreadsAction() {
-    const { currentUser: adminUser } = await getAuth();
-    if (adminUser?.role !== 'admin') {
+    const { currentUser } = await getAuth();
+    if (currentUser?.role !== 'admin' && currentUser?.role !== 'manager') {
       return { success: false, error: 'Unauthorized' };
     }
     // Return a copy sorted by which has unread messages first, then by most recent message
@@ -449,8 +469,8 @@ export async function sendAdminSupportReplyAction(prevState: unknown, formData: 
     const content = formData.get('content') as string;
     const userId = formData.get('userId') as string;
   
-    const { currentUser: adminUser } = await getAuth();
-    if (adminUser?.role !== 'admin') {
+    const { currentUser } = await getAuth();
+    if (currentUser?.role !== 'admin' && currentUser?.role !== 'manager') {
       return { success: false, error: 'Unauthorized action.' };
     }
     if (!content.trim() || !userId) {

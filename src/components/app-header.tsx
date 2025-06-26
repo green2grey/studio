@@ -75,7 +75,7 @@ function ChangeAvatarDialog({ user }: { user: User }) {
                     <span>Change Avatar</span>
                 </DropdownMenuItem>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent>
                 <form action={formAction}>
                     <DialogHeader>
                         <DialogTitle>Choose your avatar</DialogTitle>
@@ -112,6 +112,7 @@ function ChangeAvatarDialog({ user }: { user: User }) {
 
 export function AppHeader({ user, originalUser, onContactSupportClick }: AppHeaderProps) {
   const isAdmin = originalUser ? originalUser.role === 'admin' : user.role === 'admin';
+  const canAccessAdminPanel = user.role === 'admin' || user.role === 'manager';
   const isViewingAsUser = !!originalUser;
 
   return (
@@ -139,7 +140,7 @@ export function AppHeader({ user, originalUser, onContactSupportClick }: AppHead
                 <LifeBuoy className="mr-2 h-4 w-4" />
                 <span>Contact Support</span>
               </DropdownMenuItem>
-              {isAdmin && !isViewingAsUser && (
+              {canAccessAdminPanel && !isViewingAsUser && (
                 <>
                   <DropdownMenuSeparator />
                   <Link href="/dashboard/admin">
@@ -148,14 +149,16 @@ export function AppHeader({ user, originalUser, onContactSupportClick }: AppHead
                         <span>Admin Panel</span>
                     </DropdownMenuItem>
                   </Link>
-                   <form action={switchToUserViewAction} className="w-full">
-                        <button type="submit" className="w-full">
-                            <DropdownMenuItem className="w-full cursor-pointer">
-                                <Users className="mr-2 h-4 w-4" />
-                                <span>Switch to User View</span>
-                            </DropdownMenuItem>
-                        </button>
-                    </form>
+                  {isAdmin && (
+                     <form action={switchToUserViewAction} className="w-full">
+                          <button type="submit" className="w-full">
+                              <DropdownMenuItem className="w-full cursor-pointer">
+                                  <Users className="mr-2 h-4 w-4" />
+                                  <span>Switch to User View</span>
+                              </DropdownMenuItem>
+                          </button>
+                      </form>
+                  )}
                 </>
               )}
               <DropdownMenuSeparator />
