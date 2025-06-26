@@ -27,6 +27,23 @@ export interface Message {
   timestamp: number;
 }
 
+export interface SupportMessage {
+    id: string;
+    senderId: 'admin' | string; // user's id or 'admin'
+    senderName: string; // 'Admin' or user's name
+    content: string;
+    timestamp: number;
+}
+  
+export interface SupportThread {
+    userId: string;
+    userName: string;
+    userAvatar: string;
+    messages: SupportMessage[];
+    hasUnreadAdminMessages: boolean; // For user notification
+    hasUnreadUserMessages: boolean; // For admin notification
+}
+
 // In a real app, these would be hosted images. For this demo, we use placeholders.
 export const predefinedAvatars: string[] = [
     'https://placehold.co/100x100/F87171/FFFFFF.png',
@@ -83,6 +100,30 @@ export let messages: Message[] = [
   { id: 'msg3', senderId: 'charlie.brown@dhs.lacounty.gov', senderName: 'Charlie Brown', senderAvatar: users[2].avatar, departmentId: 'eng', content: "Almost there! Need a final push.", timestamp: Date.now() - 1000 * 60 * 30 },
   { id: 'msg4', senderId: 'diana.prince@dhs.lacounty.gov', senderName: 'Diana Prince', senderAvatar: users[3].avatar, departmentId: 'mkt', content: 'Marketing team, let\'s rally! We can catch up to Sales!', timestamp: Date.now() - 1000 * 60 * 120 },
   { id: 'msg5', senderId: 'george.costanza@dhs.lacounty.gov', senderName: 'George Costanza', senderAvatar: users[6].avatar, departmentId: 'sales', content: 'We are unstoppable!', timestamp: Date.now() - 1000 * 60 * 10 },
+];
+
+export let supportThreads: SupportThread[] = [
+    {
+        userId: 'diana.prince@dhs.lacounty.gov',
+        userName: 'Diana Prince',
+        userAvatar: users[3].avatar,
+        messages: [
+            { id: 'smsg1', senderId: 'diana.prince@dhs.lacounty.gov', senderName: 'Diana Prince', content: 'Hi, my step count for yesterday seems to be incorrect.', timestamp: Date.now() - 1000 * 60 * 60 * 24 },
+            { id: 'smsg2', senderId: 'admin', senderName: 'Admin', content: 'Hi Diana, thanks for reaching out. Let me take a look into that for you.', timestamp: Date.now() - 1000 * 60 * 60 * 23 }
+        ],
+        hasUnreadAdminMessages: false,
+        hasUnreadUserMessages: false,
+    },
+    {
+        userId: 'ethan.hunt@dhs.lacounty.gov',
+        userName: 'Ethan Hunt',
+        userAvatar: users[4].avatar,
+        messages: [
+            { id: 'smsg3', senderId: 'ethan.hunt@dhs.lacounty.gov', senderName: 'Ethan Hunt', content: 'Is there a way to sync my fitness watch?', timestamp: Date.now() - 1000 * 60 * 30 }
+        ],
+        hasUnreadAdminMessages: false,
+        hasUnreadUserMessages: true,
+    }
 ];
 
 export const CHALLENGE_TARGET_STEPS = 250000;

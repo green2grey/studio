@@ -21,7 +21,7 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog"
 import { logoutAction, updateAvatarAction } from "@/app/actions";
-import { LogOut, Shield, User as UserIcon } from "lucide-react";
+import { LogOut, Shield, User as UserIcon, Lifebuoy } from "lucide-react";
 import Link from "next/link";
 import { useState, useActionState, useEffect } from "react";
 import { predefinedAvatars } from "@/lib/data";
@@ -31,6 +31,7 @@ import { useFormStatus } from "react-dom";
 
 interface AppHeaderProps {
   user: User;
+  onContactSupportClick: () => void;
 }
 
 function SubmitButton() {
@@ -108,7 +109,7 @@ function ChangeAvatarDialog({ user }: { user: User }) {
     )
 }
 
-export function AppHeader({ user }: AppHeaderProps) {
+export function AppHeader({ user, onContactSupportClick }: AppHeaderProps) {
   return (
     <header className="bg-card/80 backdrop-blur-sm border-b sticky top-0 z-10">
       <div className="container mx-auto flex items-center justify-between p-4">
@@ -128,6 +129,10 @@ export function AppHeader({ user }: AppHeaderProps) {
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <ChangeAvatarDialog user={user} />
+               <DropdownMenuItem onSelect={onContactSupportClick} className="cursor-pointer">
+                <Lifebuoy className="mr-2 h-4 w-4" />
+                <span>Contact Support</span>
+              </DropdownMenuItem>
               {user.role === 'admin' && (
                   <Link href="/dashboard/admin">
                     <DropdownMenuItem className="cursor-pointer">

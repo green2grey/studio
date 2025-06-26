@@ -1,7 +1,7 @@
 'use server';
 
 import { getPersonalizedMotivation, PersonalizedMotivationInput } from '@/ai/flows/personalized-motivation';
-import { users as usersDB, pendingVerifications, User, messages as messagesDB, Message, predefinedAvatars } from '@/lib/data';
+import { users as usersDB, pendingVerifications, User, messages as messagesDB, Message, predefinedAvatars, supportThreads, SupportThread, SupportMessage } from '@/lib/data';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth';
@@ -221,5 +221,141 @@ export async function sendDepartmentMessageAction(prevState: unknown, formData: 
 
     messages.push(newMessage);
     revalidatePath('/dashboard'); // To update the chat for other users in a real-time-ish way
+    return { success: true, data: newMessage };
+}
+
+// Support Chat Actions
+export async function getSupportThreadAction() {
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
+      return { success: false, error: 'Unauthorized' };
+    }
+  
+    let thread = supportThreads.find((t) => t.userId === currentUser.id);
+  
+    if (!thread) {
+      // Create a new thread if one doesn't exist
+      thread = {
+        userId: currentUser.id,
+        userName: currentUser.name,
+        userAvatar: currentUser.avatar,
+        messages: [],
+        hasUnreadAdminMessages: false,
+        hasUnreadUserMessages: false,
+      };
+      supportThreads.push(thread);
+    }
+  
+    // When user checks their thread, mark admin messages as read
+    thread.hasUnreadAdminMessages = false;
+  
+    return { success: true, data: thread };
+}
+
+export async function sendSupportMessageAction(prevState: unknown, formData: FormData) {
+    const content = formData.get('content') as string;
+    const currentUser = await getCurrentUser();
+  
+    if (!currentUser) {
+      return { success: false, error: 'You must be logged in to send a message.' };
+    }
+    if (!content.trim()) {
+      return { success: false, error: 'Message content cannot be empty.' };
+    }
+  
+    let thread = supportThreads.find((t) => t.userId === currentUser.id);
+    if (!thread) {
+      // This should ideally not happen if getSupportThreadAction is called first,
+      // but as a fallback, create a new thread.
+      thread = {
+        userId: currentUser.id,
+        userName: currentUser.name,
+        userAvatar: currentUser.avatar,
+        messages: [],
+        hasUnreadAdminMessages: false,
+        hasUnreadUserMessages: false,
+      };
+      supportThreads.push(thread);
+    }
+  
+    const isFirstMessageFromUser = thread.messages.every(m => m.senderId === 'admin');
+
+    const newMessage: SupportMessage = {
+      id: `smsg-${Date.now()}-${Math.random()}`,
+      senderId: currentUser.id,
+      senderName: currentUser.name,
+      content: content.trim(),
+      timestamp: Date.now(),
+    };
+  
+    thread.messages.push(newMessage);
+    thread.hasUnreadUserMessages = true;
+
+    // Add automated reply on first message
+    if (isFirstMessageFromUser) {
+        const autoReply: SupportMessage = {
+            id: `smsg-${Date.now()}-admin-reply`,
+            senderId: 'admin',
+            senderName: 'Admin',
+            content: "Thanks for reaching out! An administrator will contact you shortly.",
+            timestamp: Date.now() + 1000, // ensure it appears after the user's message
+        };
+        thread.messages.push(autoReply);
+    }
+  
+    revalidatePath('/dashboard');
+    revalidatePath('/dashboard/admin');
+    return { success: true, data: newMessage };
+}
+
+// Admin Support Actions
+export async function getAllSupportThreadsAction() {
+    const adminUser = await getCurrentUser();
+    if (adminUser?.role !== 'admin') {
+      return { success: false, error: 'Unauthorized' };
+    }
+    // Return a copy sorted by which has unread messages first, then by most recent message
+    const sortedThreads = [...supportThreads].sort((a, b) => {
+        if (a.hasUnreadUserMessages && !b.hasUnreadUserMessages) return -1;
+        if (!a.hasUnreadUserMessages && b.hasUnreadUserMessages) return 1;
+        const lastMessageA = a.messages[a.messages.length - 1]?.timestamp || 0;
+        const lastMessageB = b.messages[b.messages.length - 1]?.timestamp || 0;
+        return lastMessageB - lastMessageA;
+    });
+
+    return { success: true, data: sortedThreads };
+}
+
+export async function sendAdminSupportReplyAction(prevState: unknown, formData: FormData) {
+    const content = formData.get('content') as string;
+    const userId = formData.get('userId') as string;
+  
+    const adminUser = await getCurrentUser();
+    if (adminUser?.role !== 'admin') {
+      return { success: false, error: 'Unauthorized action.' };
+    }
+    if (!content.trim() || !userId) {
+      return { success: false, error: 'User ID and message content are required.' };
+    }
+  
+    const thread = supportThreads.find((t) => t.userId === userId);
+    if (!thread) {
+      return { success: false, error: 'Support thread not found.' };
+    }
+  
+    const newMessage: SupportMessage = {
+      id: `smsg-${Date.now()}-admin-reply`,
+      senderId: 'admin',
+      senderName: 'Admin',
+      content: content.trim(),
+      timestamp: Date.now(),
+    };
+  
+    thread.messages.push(newMessage);
+    thread.hasUnreadUserMessages = false; // Admin has replied, so mark as read on their end
+    thread.hasUnreadAdminMessages = true; // User now has a new message to read
+  
+    revalidatePath('/dashboard/admin');
+    revalidatePath('/dashboard');
     return { success: true, data: newMessage };
 }

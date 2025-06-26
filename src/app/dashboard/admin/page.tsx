@@ -2,6 +2,7 @@ import { AdminDashboard } from '@/components/admin-dashboard';
 import { getCurrentUser } from '@/lib/auth';
 import { departments, users } from '@/lib/data';
 import { redirect } from 'next/navigation';
+import { getAllSupportThreadsAction } from '@/app/actions';
 
 export default async function AdminPage() {
   const currentUser = await getCurrentUser();
@@ -17,6 +18,9 @@ export default async function AdminPage() {
       departments.find((d) => d.id === u.departmentId)?.name || 'N/A',
   }));
 
+  const supportThreadsResult = await getAllSupportThreadsAction();
+  const supportThreads = supportThreadsResult.success ? supportThreadsResult.data : [];
+
   return (
     <div className="space-y-6">
       <div>
@@ -25,7 +29,7 @@ export default async function AdminPage() {
           Manage users and application data.
         </p>
       </div>
-      <AdminDashboard users={allUsersWithDept} />
+      <AdminDashboard users={allUsersWithDept} supportThreads={supportThreads || []} />
     </div>
   );
 }
