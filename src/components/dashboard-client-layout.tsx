@@ -8,9 +8,11 @@ import { useState } from 'react';
 
 export function DashboardClientLayout({
   user,
+  originalUser,
   children,
 }: {
   user: User;
+  originalUser: User | null;
   children: React.ReactNode;
 }) {
   const [isChatOpen, setChatOpen] = useState(false);
@@ -25,7 +27,7 @@ export function DashboardClientLayout({
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
-      <AppHeader user={user} onContactSupportClick={openSupportChat} />
+      <AppHeader user={user} originalUser={originalUser} onContactSupportClick={openSupportChat} />
       <main className="flex-1 container mx-auto p-4 md:p-8">
         {children}
       </main>

@@ -72,6 +72,10 @@ export const departments: Department[] = [
   { id: 'hr', name: 'Human Resources' },
 ];
 
+export const ADMIN_USER_ID = 'babken.egoian@dhs.lacounty.gov';
+export const DEV_TEST_USER_ID = 'brianna.smith@dhs.lacounty.gov';
+
+
 // Note: Passwords are in plain text for this mock.
 // In a real app, you should NEVER store plain-text passwords.
 export let users: (User & { password?: string })[] = [

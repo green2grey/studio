@@ -1,6 +1,6 @@
 'use client';
 
-import { deleteUserAction, impersonateUserAction, resetPasswordAction } from '@/app/actions';
+import { deleteUserAction, resetPasswordAction } from '@/app/actions';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,7 +23,7 @@ import {
 import { TableCell, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
 import type { User } from '@/lib/data';
-import { KeyRound, MoreHorizontal, Trash2, ArrowRightLeft } from 'lucide-react';
+import { KeyRound, MoreHorizontal, Trash2 } from 'lucide-react';
 
 type UserWithDept = User & { departmentName: string };
 
@@ -92,16 +92,6 @@ export function UserManagement({ users, onUserDeleted, adminUser }: UserManageme
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                   <form action={impersonateUserAction}>
-                      <input type="hidden" name="userId" value={user.id} />
-                      <DropdownMenuItem asChild className="cursor-pointer">
-                          <button type="submit" className="w-full text-left flex items-center">
-                              <ArrowRightLeft className="mr-2 h-4 w-4" />
-                              <span>Impersonate</span>
-                          </button>
-                      </DropdownMenuItem>
-                  </form>
-                  <DropdownMenuSeparator />
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <DropdownMenuItem

@@ -109,7 +109,7 @@ export async function loginAction(prevState: unknown, data: FormData) {
 
 export async function logoutAction() {
     cookies().delete('auth_token');
-    cookies().delete('impersonation_token');
+    cookies().delete('dev_user_view');
     redirect('/login');
 }
 
@@ -361,31 +361,20 @@ export async function sendAdminSupportReplyAction(prevState: unknown, formData: 
     return { success: true, data: newMessage };
 }
 
-// Impersonation Actions
-export async function impersonateUserAction(formData: FormData) {
-    const { originalUser } = await getAuth();
-    if (originalUser?.role !== 'admin') {
-        throw new Error('Unauthorized action.');
-    }
-
-    const userIdToImpersonate = formData.get('userId') as string;
-    if (!userIdToImpersonate) {
-        throw new Error('User ID is required.');
-    }
-
-    cookies().set('impersonation_token', userIdToImpersonate, {
+// Dev View Switch Actions
+export async function switchToUserViewAction() {
+    cookies().set('dev_user_view', 'true', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
         path: '/',
     });
-    
     revalidatePath('/');
     redirect('/dashboard');
 }
 
-export async function stopImpersonationAction() {
-    cookies().delete('impersonation_token');
+export async function switchToAdminViewAction() {
+    cookies().delete('dev_user_view');
     revalidatePath('/');
     redirect('/dashboard');
 }

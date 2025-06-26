@@ -20,8 +20,8 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog"
-import { logoutAction, updateAvatarAction } from "@/app/actions";
-import { LogOut, Shield, User as UserIcon, LifeBuoy } from "lucide-react";
+import { logoutAction, updateAvatarAction, switchToUserViewAction } from "@/app/actions";
+import { LogOut, Shield, User as UserIcon, LifeBuoy, Users } from "lucide-react";
 import Link from "next/link";
 import { useState, useActionState, useEffect } from "react";
 import { predefinedAvatars } from "@/lib/data";
@@ -31,6 +31,7 @@ import { useFormStatus } from "react-dom";
 
 interface AppHeaderProps {
   user: User;
+  originalUser: User | null;
   onContactSupportClick: () => void;
 }
 
@@ -109,7 +110,10 @@ function ChangeAvatarDialog({ user }: { user: User }) {
     )
 }
 
-export function AppHeader({ user, onContactSupportClick }: AppHeaderProps) {
+export function AppHeader({ user, originalUser, onContactSupportClick }: AppHeaderProps) {
+  const isAdmin = originalUser ? originalUser.role === 'admin' : user.role === 'admin';
+  const isViewingAsUser = !!originalUser;
+
   return (
     <header className="bg-card/80 backdrop-blur-sm border-b sticky top-0 z-10">
       <div className="container mx-auto flex items-center justify-between p-4">
@@ -135,13 +139,24 @@ export function AppHeader({ user, onContactSupportClick }: AppHeaderProps) {
                 <LifeBuoy className="mr-2 h-4 w-4" />
                 <span>Contact Support</span>
               </DropdownMenuItem>
-              {user.role === 'admin' && (
+              {isAdmin && !isViewingAsUser && (
+                <>
+                  <DropdownMenuSeparator />
                   <Link href="/dashboard/admin">
                     <DropdownMenuItem className="cursor-pointer">
                         <Shield className="mr-2 h-4 w-4" />
                         <span>Admin Panel</span>
                     </DropdownMenuItem>
                   </Link>
+                   <form action={switchToUserViewAction} className="w-full">
+                        <button type="submit" className="w-full">
+                            <DropdownMenuItem className="w-full cursor-pointer">
+                                <Users className="mr-2 h-4 w-4" />
+                                <span>Switch to User View</span>
+                            </DropdownMenuItem>
+                        </button>
+                    </form>
+                </>
               )}
               <DropdownMenuSeparator />
               <form action={logoutAction} className="w-full">

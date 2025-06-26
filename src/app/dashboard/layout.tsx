@@ -1,6 +1,6 @@
 import { getAuth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import { ImpersonationBanner } from '@/components/impersonation-banner';
+import { DevSwitchBanner } from '@/components/dev-switch-banner';
 import { DashboardClientLayout } from '@/components/dashboard-client-layout';
 
 export default async function DashboardLayout({
@@ -16,8 +16,8 @@ export default async function DashboardLayout({
 
   return (
     <div className="flex flex-col min-h-screen">
-      {originalUser && <ImpersonationBanner currentUser={currentUser} originalUser={originalUser} />}
-      <DashboardClientLayout user={currentUser}>
+      {originalUser && <DevSwitchBanner adminUser={originalUser} />}
+      <DashboardClientLayout user={currentUser} originalUser={originalUser}>
         {children}
       </DashboardClientLayout>
     </div>

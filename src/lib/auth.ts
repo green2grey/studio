@@ -2,7 +2,7 @@
 'use server';
 
 import { cookies } from 'next/headers'
-import { users } from './data'
+import { users, DEV_TEST_USER_ID, ADMIN_USER_ID } from './data'
 import type { User } from './data'
 import { unstable_noStore as noStore } from 'next/cache';
 
@@ -11,34 +11,31 @@ export async function getAuth(): Promise<{
   originalUser: (User & { password?: string }) | null;
 }> {
   noStore();
-  const originalUserId = cookies().get('auth_token')?.value
-  const impersonatedUserId = cookies().get('impersonation_token')?.value
+  const userId = cookies().get('auth_token')?.value;
+  const isDevUserView = cookies().get('dev_user_view')?.value === 'true';
 
-  if (!originalUserId) {
+  if (!userId) {
     return { currentUser: null, originalUser: null }
   }
 
-  const originalUser = users.find(u => u.id === originalUserId)
+  const loggedInUser = users.find(u => u.id === userId)
 
-  if (!originalUser) {
+  if (!loggedInUser) {
     // Clean up bad cookies
     cookies().delete('auth_token');
-    cookies().delete('impersonation_token');
+    cookies().delete('dev_user_view');
     return { currentUser: null, originalUser: null }
   }
 
-  if (originalUser.role === 'admin' && impersonatedUserId) {
-    const impersonatedUser = users.find(u => u.id === impersonatedUserId);
-    // Ensure admin cannot impersonate themselves
-    if (impersonatedUser && impersonatedUser.id !== originalUser.id) {
-      return { currentUser: impersonatedUser, originalUser: originalUser };
+  // Check for dev user view switch. Only the admin can use this.
+  if (loggedInUser.id === ADMIN_USER_ID && isDevUserView) {
+    const testUser = users.find(u => u.id === DEV_TEST_USER_ID);
+    if (testUser) {
+      // Admin is viewing as the test user. Return test user as current, admin as original.
+      return { currentUser: testUser, originalUser: loggedInUser };
     }
   }
 
-  // If not impersonating or impersonation is invalid, ensure the impersonation cookie is cleared.
-  if (impersonatedUserId) {
-    cookies().delete('impersonation_token');
-  }
-  
-  return { currentUser: originalUser, originalUser: null };
+  // Default case: not in dev view, or not the admin.
+  return { currentUser: loggedInUser, originalUser: null };
 }
