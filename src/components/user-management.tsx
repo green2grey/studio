@@ -1,3 +1,4 @@
+
 'use client';
 
 import { deleteUserAction, resetPasswordAction } from '@/app/actions';
@@ -10,6 +11,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import {
