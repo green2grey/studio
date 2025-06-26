@@ -99,6 +99,10 @@ function Message({ message }: { message: SupportMessage }) {
 export function SupportTickets({ initialThreads }: SupportTicketsProps) {
   const [threads, setThreads] = useState(initialThreads);
 
+  useEffect(() => {
+    setThreads(initialThreads);
+  }, [initialThreads]);
+
   if (threads.length === 0) {
     return (
       <div className="text-center text-muted-foreground py-10">

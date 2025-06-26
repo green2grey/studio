@@ -1,7 +1,7 @@
 'use client';
 
 import type { User, SupportThread } from '@/lib/data';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Table,
   TableBody,
@@ -27,6 +27,14 @@ export function AdminDashboard({
 }: AdminDashboardProps) {
   const [users, setUsers] = useState(initialUsers);
   const [supportThreads, setSupportThreads] = useState(initialThreads);
+
+  useEffect(() => {
+    setUsers(initialUsers);
+  }, [initialUsers]);
+
+  useEffect(() => {
+    setSupportThreads(initialThreads);
+  }, [initialThreads]);
 
   const onUserDeleted = (userId: string) => {
     setUsers((currentUsers) => currentUsers.filter((u) => u.id !== userId));
