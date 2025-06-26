@@ -1,9 +1,12 @@
 'use server';
 
 import { getPersonalizedMotivation, PersonalizedMotivationInput } from '@/ai/flows/personalized-motivation';
-import { users, pendingVerifications } from '@/lib/data';
+import { users as usersDB, pendingVerifications, User } from '@/lib/data';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { getCurrentUser } from '@/lib/auth';
+
+let users = usersDB;
 
 export async function getMotivationAction(input: PersonalizedMotivationInput) {
     try {
@@ -40,7 +43,7 @@ export async function signupAction(data: FormData) {
 
     pendingVerifications.set(email, {
         code,
-        user: { name, avatar: `https://placehold.co/100x100.png`, steps: 0, dailyGoal: 10000, departmentId, password },
+        user: { name, avatar: `https://placehold.co/100x100.png`, steps: 0, dailyGoal: 10000, departmentId, password, role: 'user' },
         timestamp: Date.now(),
     });
 
@@ -103,4 +106,43 @@ export async function loginAction(data: FormData) {
 export async function logoutAction() {
     cookies().delete('auth_token');
     redirect('/login');
+}
+
+// Admin Actions
+export async function deleteUserAction(userId: string) {
+    const adminUser = await getCurrentUser();
+    if (adminUser?.role !== 'admin') {
+        return { success: false, error: 'Unauthorized action.' };
+    }
+    if (adminUser.id === userId) {
+        return { success: false, error: "Admins cannot delete their own account." };
+    }
+    
+    const initialLength = users.length;
+    users = users.filter(u => u.id !== userId);
+
+    if (users.length === initialLength) {
+        return { success: false, error: "User not found." };
+    }
+
+    return { success: true };
+}
+
+export async function resetPasswordAction(userId: string) {
+    const adminUser = await getCurrentUser();
+    if (adminUser?.role !== 'admin') {
+        return { success: false, error: 'Unauthorized action.' };
+    }
+
+    const userIndex = users.findIndex(u => u.id === userId);
+    if (userIndex === -1) {
+        return { success: false, error: 'User not found.' };
+    }
+    
+    const newPassword = 'password123'; // Reset to a default password
+    users[userIndex].password = newPassword;
+
+    console.log(`Password for user ${userId} has been reset to "${newPassword}"`);
+
+    return { success: true, message: `Password reset successfully to "${newPassword}".` };
 }

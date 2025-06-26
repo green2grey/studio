@@ -10,7 +10,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { logoutAction } from "@/app/actions";
-import { LogOut } from "lucide-react";
+import { LogOut, Shield } from "lucide-react";
+import Link from "next/link";
 
 interface AppHeaderProps {
   user: User;
@@ -35,6 +36,14 @@ export function AppHeader({ user }: AppHeaderProps) {
                 <p className="text-xs text-muted-foreground font-normal">{user.id}</p>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
+              {user.role === 'admin' && (
+                  <Link href="/dashboard/admin">
+                    <DropdownMenuItem className="cursor-pointer">
+                        <Shield className="mr-2 h-4 w-4" />
+                        <span>Admin Panel</span>
+                    </DropdownMenuItem>
+                  </Link>
+              )}
               <form action={logoutAction} className="w-full">
                 <Button type="submit" variant="ghost" className="w-full justify-start p-0">
                   <DropdownMenuItem className="w-full cursor-pointer">
