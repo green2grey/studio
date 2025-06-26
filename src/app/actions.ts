@@ -19,7 +19,7 @@ export async function getMotivationAction(input: PersonalizedMotivationInput) {
 }
 
 // Mock sign-up action
-export async function signupAction(data: FormData) {
+export async function signupAction(prevState: unknown, data: FormData) {
     const name = data.get('name') as string;
     const email = data.get('email') as string;
     const password = data.get('password') as string;
@@ -51,7 +51,7 @@ export async function signupAction(data: FormData) {
 }
 
 // Mock email verification action
-export async function verifyEmailAction(data: FormData) {
+export async function verifyEmailAction(prevState: unknown, data: FormData) {
     const email = data.get('email') as string;
     const code = data.get('code') as string;
 
@@ -79,7 +79,7 @@ export async function verifyEmailAction(data: FormData) {
 }
 
 // Mock login action
-export async function loginAction(data: FormData) {
+export async function loginAction(prevState: unknown, data: FormData) {
     const email = data.get('email') as string;
     const password = data.get('password') as string;
 
