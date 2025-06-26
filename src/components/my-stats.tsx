@@ -28,7 +28,7 @@ export function MyStats({ user }: MyStatsProps) {
       setIsLoading(true);
       const res = await getMotivationAction({
         userName: user.name,
-        userStepCount: user.steps,
+        userStepCount: user.steps.daily,
         departmentName: user.department.name,
         departmentRank: user.departmentRank,
         departmentTotalSteps: user.departmentTotalSteps,
@@ -43,8 +43,8 @@ export function MyStats({ user }: MyStatsProps) {
     fetchMotivation();
   }, [user]);
 
-  const progress = Math.min((user.steps / user.dailyGoal) * 100, 100);
-  const goalMet = user.steps >= user.dailyGoal;
+  const progress = Math.min((user.steps.daily / user.dailyGoal) * 100, 100);
+  const goalMet = user.steps.daily >= user.dailyGoal;
 
   return (
     <div className="grid gap-8 md:grid-cols-2">
@@ -57,7 +57,7 @@ export function MyStats({ user }: MyStatsProps) {
         </CardHeader>
         <CardContent className="space-y-4 flex-1 flex flex-col justify-center">
           <div className="text-center">
-            <p className="text-5xl font-bold font-headline text-primary">{user.steps.toLocaleString()}</p>
+            <p className="text-5xl font-bold font-headline text-primary">{user.steps.daily.toLocaleString()}</p>
             <p className="text-muted-foreground">steps today</p>
           </div>
           <div className="space-y-2">

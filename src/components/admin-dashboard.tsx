@@ -87,7 +87,7 @@ export function AdminDashboard({ users: initialUsers }: AdminDashboardProps) {
             <TableHead>Email</TableHead>
             <TableHead>Department</TableHead>
             <TableHead>Role</TableHead>
-            <TableHead className="text-right">Steps</TableHead>
+            <TableHead className="text-right">Total Steps</TableHead>
             <TableHead className="w-[50px]">
               <span className="sr-only">Actions</span>
             </TableHead>
@@ -101,7 +101,7 @@ export function AdminDashboard({ users: initialUsers }: AdminDashboardProps) {
               <TableCell>{user.departmentName}</TableCell>
               <TableCell className="capitalize">{user.role}</TableCell>
               <TableCell className="text-right">
-                {user.steps.toLocaleString()}
+                {user.steps.total.toLocaleString()}
               </TableCell>
               <TableCell>
                 {user.role !== 'admin' && (

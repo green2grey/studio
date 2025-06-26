@@ -16,26 +16,26 @@ export default async function DashboardPage() {
     redirect('/login');
   }
   
-  const departmentSteps = initialDepts.map(dept => {
+  const departmentsWithMembers = initialDepts.map(dept => {
     const members = initialUsers.filter(u => u.departmentId === dept.id);
-    const totalSteps = members.reduce((sum, member) => sum + member.steps, 0);
+    const totalSteps = members.reduce((sum, member) => sum + member.steps.total, 0);
     return { ...dept, totalSteps, members };
   });
 
-  departmentSteps.sort((a, b) => b.totalSteps - a.totalSteps);
+  departmentsWithMembers.sort((a, b) => b.totalSteps - a.totalSteps);
 
   const currentUserWithDept = {
     ...currentUser,
     department: initialDepts.find(d => d.id === currentUser.departmentId)!,
-    departmentRank: departmentSteps.findIndex(d => d.id === currentUser.departmentId) + 1,
-    departmentTotalSteps: departmentSteps.find(d => d.id === currentUser.departmentId)!.totalSteps,
+    departmentRank: departmentsWithMembers.findIndex(d => d.id === currentUser.departmentId) + 1,
+    departmentTotalSteps: departmentsWithMembers.find(d => d.id === currentUser.departmentId)!.totalSteps,
     challengeTargetSteps: CHALLENGE_TARGET_STEPS,
   };
 
   return (
     <div className="space-y-8">
       <MyStats user={currentUserWithDept} />
-      <Leaderboards departments={departmentSteps} allUsers={initialUsers} currentUser={currentUser} />
+      <Leaderboards departments={departmentsWithMembers} currentUser={currentUser} />
     </div>
   );
 }
