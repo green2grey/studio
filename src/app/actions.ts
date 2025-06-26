@@ -4,7 +4,7 @@ import { getPersonalizedMotivation, PersonalizedMotivationInput } from '@/ai/flo
 import { users as usersDB, pendingVerifications, User, messages as messagesDB, Message, predefinedAvatars, supportThreads, SupportThread, SupportMessage } from '@/lib/data';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { getCurrentUser } from '@/lib/auth';
+import { getAuth } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 
 let users = usersDB;
@@ -109,12 +109,13 @@ export async function loginAction(prevState: unknown, data: FormData) {
 
 export async function logoutAction() {
     cookies().delete('auth_token');
+    cookies().delete('impersonation_token');
     redirect('/login');
 }
 
 // User Actions
 export async function updateAvatarAction(prevState: unknown, formData: FormData) {
-    const currentUser = await getCurrentUser();
+    const { currentUser } = await getAuth();
     if (!currentUser) {
       return { success: false, error: 'You must be logged in to do that.' };
     }
@@ -145,7 +146,7 @@ export async function updateAvatarAction(prevState: unknown, formData: FormData)
 
 // Admin Actions
 export async function deleteUserAction(userId: string) {
-    const adminUser = await getCurrentUser();
+    const { currentUser: adminUser } = await getAuth();
     if (adminUser?.role !== 'admin') {
         return { success: false, error: 'Unauthorized action.' };
     }
@@ -164,7 +165,7 @@ export async function deleteUserAction(userId: string) {
 }
 
 export async function resetPasswordAction(userId: string) {
-    const adminUser = await getCurrentUser();
+    const { currentUser: adminUser } = await getAuth();
     if (adminUser?.role !== 'admin') {
         return { success: false, error: 'Unauthorized action.' };
     }
@@ -184,7 +185,7 @@ export async function resetPasswordAction(userId: string) {
 
 // Chat Actions
 export async function getDepartmentMessagesAction(departmentId: string) {
-    const currentUser = await getCurrentUser();
+    const { currentUser } = await getAuth();
     if (!currentUser || currentUser.departmentId !== departmentId) {
         return { success: false, error: 'Unauthorized' };
     }
@@ -198,7 +199,7 @@ export async function sendDepartmentMessageAction(prevState: unknown, formData: 
     const content = formData.get('content') as string;
     const departmentId = formData.get('departmentId') as string;
     
-    const currentUser = await getCurrentUser();
+    const { currentUser } = await getAuth();
     if (!currentUser) {
         return { success: false, error: 'You must be logged in to send a message.' };
     }
@@ -226,7 +227,7 @@ export async function sendDepartmentMessageAction(prevState: unknown, formData: 
 
 // Support Chat Actions
 export async function getSupportThreadAction() {
-    const currentUser = await getCurrentUser();
+    const { currentUser } = await getAuth();
     if (!currentUser) {
       return { success: false, error: 'Unauthorized' };
     }
@@ -254,7 +255,7 @@ export async function getSupportThreadAction() {
 
 export async function sendSupportMessageAction(prevState: unknown, formData: FormData) {
     const content = formData.get('content') as string;
-    const currentUser = await getCurrentUser();
+    const { currentUser } = await getAuth();
   
     if (!currentUser) {
       return { success: false, error: 'You must be logged in to send a message.' };
@@ -310,7 +311,7 @@ export async function sendSupportMessageAction(prevState: unknown, formData: For
 
 // Admin Support Actions
 export async function getAllSupportThreadsAction() {
-    const adminUser = await getCurrentUser();
+    const { currentUser: adminUser } = await getAuth();
     if (adminUser?.role !== 'admin') {
       return { success: false, error: 'Unauthorized' };
     }
@@ -330,7 +331,7 @@ export async function sendAdminSupportReplyAction(prevState: unknown, formData: 
     const content = formData.get('content') as string;
     const userId = formData.get('userId') as string;
   
-    const adminUser = await getCurrentUser();
+    const { currentUser: adminUser } = await getAuth();
     if (adminUser?.role !== 'admin') {
       return { success: false, error: 'Unauthorized action.' };
     }
@@ -358,4 +359,33 @@ export async function sendAdminSupportReplyAction(prevState: unknown, formData: 
     revalidatePath('/dashboard/admin');
     revalidatePath('/dashboard');
     return { success: true, data: newMessage };
+}
+
+// Impersonation Actions
+export async function impersonateUserAction(formData: FormData) {
+    const { originalUser } = await getAuth();
+    if (originalUser?.role !== 'admin') {
+        throw new Error('Unauthorized action.');
+    }
+
+    const userIdToImpersonate = formData.get('userId') as string;
+    if (!userIdToImpersonate) {
+        throw new Error('User ID is required.');
+    }
+
+    cookies().set('impersonation_token', userIdToImpersonate, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+    });
+    
+    revalidatePath('/');
+    redirect('/dashboard');
+}
+
+export async function stopImpersonationAction() {
+    cookies().delete('impersonation_token');
+    revalidatePath('/');
+    redirect('/dashboard');
 }

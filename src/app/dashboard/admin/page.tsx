@@ -1,11 +1,11 @@
 import { AdminDashboard } from '@/components/admin-dashboard';
-import { getCurrentUser } from '@/lib/auth';
+import { getAuth } from '@/lib/auth';
 import { departments, users } from '@/lib/data';
 import { redirect } from 'next/navigation';
 import { getAllSupportThreadsAction } from '@/app/actions';
 
 export default async function AdminPage() {
-  const currentUser = await getCurrentUser();
+  const { currentUser } = await getAuth();
 
   if (currentUser?.role !== 'admin') {
     redirect('/dashboard');
@@ -29,7 +29,7 @@ export default async function AdminPage() {
           Manage users and application data.
         </p>
       </div>
-      <AdminDashboard users={allUsersWithDept} supportThreads={supportThreads || []} />
+      <AdminDashboard users={allUsersWithDept} supportThreads={supportThreads || []} adminUser={currentUser} />
     </div>
   );
 }

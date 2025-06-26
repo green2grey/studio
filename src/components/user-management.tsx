@@ -1,6 +1,6 @@
 'use client';
 
-import { deleteUserAction, resetPasswordAction } from '@/app/actions';
+import { deleteUserAction, impersonateUserAction, resetPasswordAction } from '@/app/actions';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,16 +23,17 @@ import {
 import { TableCell, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
 import type { User } from '@/lib/data';
-import { KeyRound, MoreHorizontal, Trash2 } from 'lucide-react';
+import { KeyRound, MoreHorizontal, Trash2, UserSwitch } from 'lucide-react';
 
 type UserWithDept = User & { departmentName: string };
 
 interface UserManagementProps {
   users: UserWithDept[];
   onUserDeleted: (userId: string) => void;
+  adminUser: User;
 }
 
-export function UserManagement({ users, onUserDeleted }: UserManagementProps) {
+export function UserManagement({ users, onUserDeleted, adminUser }: UserManagementProps) {
   const { toast } = useToast();
 
   const handleResetPassword = async (userId: string) => {
@@ -82,7 +83,7 @@ export function UserManagement({ users, onUserDeleted }: UserManagementProps) {
             {user.steps.total.toLocaleString()}
           </TableCell>
           <TableCell>
-            {user.role !== 'admin' && (
+            {user.id !== adminUser.id && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="h-8 w-8 p-0">
@@ -91,6 +92,16 @@ export function UserManagement({ users, onUserDeleted }: UserManagementProps) {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
+                   <form action={impersonateUserAction}>
+                      <input type="hidden" name="userId" value={user.id} />
+                      <DropdownMenuItem asChild className="cursor-pointer">
+                          <button type="submit" className="w-full text-left flex items-center">
+                              <UserSwitch className="mr-2 h-4 w-4" />
+                              <span>Impersonate</span>
+                          </button>
+                      </DropdownMenuItem>
+                  </form>
+                  <DropdownMenuSeparator />
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <DropdownMenuItem
@@ -119,39 +130,43 @@ export function UserManagement({ users, onUserDeleted }: UserManagementProps) {
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
-                  <DropdownMenuSeparator />
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <DropdownMenuItem
-                        onSelect={(e) => e.preventDefault()}
-                        className="cursor-pointer text-destructive focus:text-destructive"
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        <span>Delete User</span>
-                      </DropdownMenuItem>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>
-                          Are you absolutely sure?
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This action cannot be undone. This will
-                          permanently delete the user's account and remove
-                          their data.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          className="bg-destructive hover:bg-destructive/90"
-                          onClick={() => handleDeleteUser(user.id)}
-                        >
-                          Delete
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                  {user.role !== 'admin' && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <DropdownMenuItem
+                            onSelect={(e) => e.preventDefault()}
+                            className="cursor-pointer text-destructive focus:text-destructive"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            <span>Delete User</span>
+                          </DropdownMenuItem>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>
+                              Are you absolutely sure?
+                            </AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This action cannot be undone. This will
+                              permanently delete the user's account and remove
+                              their data.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              className="bg-destructive hover:bg-destructive/90"
+                              onClick={() => handleDeleteUser(user.id)}
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             )}

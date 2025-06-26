@@ -19,11 +19,13 @@ type UserWithDept = User & { departmentName: string };
 interface AdminDashboardProps {
   users: UserWithDept[];
   supportThreads: SupportThread[];
+  adminUser: User;
 }
 
 export function AdminDashboard({
   users: initialUsers,
   supportThreads: initialThreads,
+  adminUser,
 }: AdminDashboardProps) {
   const [users, setUsers] = useState(initialUsers);
 
@@ -51,13 +53,13 @@ export function AdminDashboard({
                 <TableHead>Department</TableHead>
                 <TableHead>Role</TableHead>
                 <TableHead className="text-right">Total Steps</TableHead>
-                <TableHead className="w-[50px]">
+                <TableHead className="w-[80px]">
                   <span className="sr-only">Actions</span>
                 </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              <UserManagement users={users} onUserDeleted={onUserDeleted} />
+              <UserManagement users={users} onUserDeleted={onUserDeleted} adminUser={adminUser} />
             </TableBody>
           </Table>
         </div>

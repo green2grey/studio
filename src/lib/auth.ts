@@ -5,15 +5,38 @@ import { cookies } from 'next/headers'
 import { users } from './data'
 import type { User } from './data'
 
-// This has to be a server function to access cookies, so we can't call it
-// directly from client components during initial render.
-export async function getCurrentUser(): Promise<(User & { password?: string }) | null> {
-  const userId = cookies().get('auth_token')?.value
-  if (!userId) {
-    return null
+export async function getAuth(): Promise<{
+  currentUser: (User & { password?: string }) | null;
+  originalUser: (User & { password?: string }) | null;
+}> {
+  const originalUserId = cookies().get('auth_token')?.value
+  const impersonatedUserId = cookies().get('impersonation_token')?.value
+
+  if (!originalUserId) {
+    return { currentUser: null, originalUser: null }
   }
-  // In a real app, you'd fetch this from a database.
-  // Here we find the user in our mock data.
-  const user = users.find(u => u.id === userId)
-  return user || null
+
+  const originalUser = users.find(u => u.id === originalUserId)
+
+  if (!originalUser) {
+    // Clean up bad cookies
+    cookies().delete('auth_token');
+    cookies().delete('impersonation_token');
+    return { currentUser: null, originalUser: null }
+  }
+
+  if (originalUser.role === 'admin' && impersonatedUserId) {
+    const impersonatedUser = users.find(u => u.id === impersonatedUserId);
+    // Ensure admin cannot impersonate themselves
+    if (impersonatedUser && impersonatedUser.id !== originalUser.id) {
+      return { currentUser: impersonatedUser, originalUser: originalUser };
+    }
+  }
+
+  // If not impersonating or impersonation is invalid, ensure the impersonation cookie is cleared.
+  if (impersonatedUserId) {
+    cookies().delete('impersonation_token');
+  }
+  
+  return { currentUser: originalUser, originalUser: null };
 }

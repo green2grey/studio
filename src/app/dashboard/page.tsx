@@ -5,12 +5,12 @@ import {
   users as initialUsers,
   CHALLENGE_TARGET_STEPS 
 } from '@/lib/data';
-import { getCurrentUser } from '@/lib/auth';
+import { getAuth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 
 
 export default async function DashboardPage() {
-  const currentUser = await getCurrentUser();
+  const { currentUser } = await getAuth();
 
   if (!currentUser) {
     redirect('/login');
