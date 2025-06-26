@@ -22,8 +22,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
-import type { User } from '@/lib/data';
-import { KeyRound, MoreHorizontal, Trash2 } from 'lucide-react';
+import type { User, Department } from '@/lib/data';
+import { KeyRound, MoreHorizontal, Trash2, UserCog } from 'lucide-react';
+import { EditUserDialog } from './edit-user-dialog';
 
 type UserWithDept = User & { departmentName: string };
 
@@ -31,9 +32,10 @@ interface UserManagementProps {
   users: UserWithDept[];
   onUserDeleted: (userId: string) => void;
   adminUser: User;
+  departments: Department[];
 }
 
-export function UserManagement({ users, onUserDeleted, adminUser }: UserManagementProps) {
+export function UserManagement({ users, onUserDeleted, adminUser, departments }: UserManagementProps) {
   const { toast } = useToast();
 
   const handleResetPassword = async (userId: string) => {
@@ -92,6 +94,8 @@ export function UserManagement({ users, onUserDeleted, adminUser }: UserManageme
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
+                  <EditUserDialog user={user} departments={departments} />
+                  <DropdownMenuSeparator />
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <DropdownMenuItem

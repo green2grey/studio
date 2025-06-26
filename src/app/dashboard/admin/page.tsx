@@ -29,7 +29,12 @@ export default async function AdminPage() {
           Manage users and application data.
         </p>
       </div>
-      <AdminDashboard users={allUsersWithDept} supportThreads={supportThreads || []} adminUser={currentUser} />
+      <AdminDashboard 
+        users={allUsersWithDept} 
+        supportThreads={supportThreads || []} 
+        adminUser={currentUser}
+        departments={departments}
+      />
     </div>
   );
 }

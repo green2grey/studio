@@ -5,6 +5,7 @@ import { AppHeader } from '@/components/app-header';
 import { departments } from '@/lib/data';
 import { ChatWidget } from '@/components/chat-widget';
 import { useState } from 'react';
+import { ForcePasswordChangeDialog } from './force-password-change-dialog';
 
 export function DashboardClientLayout({
   user,
@@ -24,6 +25,10 @@ export function DashboardClientLayout({
     setActiveChat('support');
     setChatOpen(true);
   };
+  
+  if (user.mustChangePassword) {
+    return <ForcePasswordChangeDialog />;
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">

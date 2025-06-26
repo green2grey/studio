@@ -10,6 +10,8 @@ export interface User {
   dailyGoal: number;
   departmentId: string;
   role?: 'admin' | 'user';
+  mustChangePassword?: boolean;
+  password?: string;
 }
 
 export interface Department {
@@ -48,6 +50,7 @@ export interface SupportThread {
 // In a real app, you would use a proper database like Firestore or PostgreSQL.
 declare global {
   var __users: (User & { password?: string })[] | undefined;
+  var __departments: Department[] | undefined;
   var __messages: Message[] | undefined;
   var __supportThreads: SupportThread[] | undefined;
   var __pendingVerifications: Map<string, { code: string; user: Omit<User, 'id'> & { password?: string }; timestamp: number }> | undefined;
@@ -68,13 +71,6 @@ export const predefinedAvatars: string[] = [
     'https://placehold.co/100x100/c084fc/FFFFFF.png',
     'https://placehold.co/100x100/2dd4bf/FFFFFF.png',
     'https://placehold.co/100x100/fb7185/FFFFFF.png',
-];
-
-export const departments: Department[] = [
-  { id: 'eng', name: 'Engineering' },
-  { id: 'mkt', name: 'Marketing' },
-  { id: 'sales', name: 'Sales' },
-  { id: 'hr', name: 'Human Resources' },
 ];
 
 export const ADMIN_USER_ID = 'babken.egoian@dhs.lacounty.gov';
@@ -104,6 +100,14 @@ if (!global.__users) {
     { id: 'jane.doe@dhs.lacounty.gov', name: 'Jane Doe', password: 'password123', avatar: predefinedAvatars[9], steps: { daily: 8888, weekly: 44444, total: 88880 }, dailyGoal: 8000, departmentId: 'hr', role: 'user' },
   ];
 }
+if (!global.__departments) {
+  global.__departments = [
+    { id: 'eng', name: 'Engineering' },
+    { id: 'mkt', name: 'Marketing' },
+    { id: 'sales', name: 'Sales' },
+    { id: 'hr', name: 'Human Resources' },
+  ];
+}
 if (!global.__messages) {
   global.__messages = [];
 }
@@ -115,6 +119,7 @@ if (!global.__pendingVerifications) {
 }
 
 export let users = global.__users;
+export let departments = global.__departments;
 export let messages = global.__messages;
 export let supportThreads = global.__supportThreads;
 export let pendingVerifications = global.__pendingVerifications;

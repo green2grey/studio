@@ -1,7 +1,7 @@
 'use server';
 
 import { getPersonalizedMotivation, PersonalizedMotivationInput } from '@/ai/flows/personalized-motivation';
-import { users, pendingVerifications, User, messages, Message, predefinedAvatars, supportThreads, SupportThread, SupportMessage } from '@/lib/data';
+import { users, pendingVerifications, User, messages, Message, predefinedAvatars, supportThreads, SupportThread, SupportMessage, departments } from '@/lib/data';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { getAuth } from '@/lib/auth';
@@ -141,7 +141,128 @@ export async function updateAvatarAction(prevState: unknown, formData: FormData)
     return { success: true };
 }
 
+export async function updatePasswordAction(prevState: unknown, data: FormData) {
+    const { currentUser } = await getAuth();
+    if (!currentUser) {
+      return { success: false, error: 'You must be logged in to do that.' };
+    }
+
+    const newPassword = data.get('newPassword') as string;
+    const confirmPassword = data.get('confirmPassword') as string;
+
+    if (!newPassword || !confirmPassword) {
+        return { success: false, error: 'Both password fields are required.' };
+    }
+    if (newPassword.length < 8) {
+        return { success: false, error: 'Password must be at least 8 characters long.' };
+    }
+    if (newPassword !== confirmPassword) {
+        return { success: false, error: 'Passwords do not match.' };
+    }
+
+    const userIndex = users.findIndex((u) => u.id === currentUser.id);
+    if (userIndex !== -1) {
+      users[userIndex].password = newPassword;
+      users[userIndex].mustChangePassword = false;
+    } else {
+      return { success: false, error: 'User not found.' };
+    }
+    
+    revalidatePath('/dashboard');
+    return { success: true };
+}
+
 // Admin Actions
+export async function adminCreateUserAction(prevState: unknown, data: FormData) {
+    const { currentUser } = await getAuth();
+    if (currentUser?.role !== 'admin') {
+        return { success: false, error: 'Unauthorized action.' };
+    }
+
+    const firstName = data.get('firstName') as string;
+    const lastName = data.get('lastName') as string;
+    const email = data.get('email') as string;
+    const password = data.get('password') as string;
+    const departmentId = data.get('departmentId') as string;
+
+    if (!firstName || !lastName || !email || !password || !departmentId) {
+        return { success: false, error: 'All fields are required.' };
+    }
+    
+    if (users.some(user => user.id === email)) {
+        return { success: false, error: 'User with this email already exists.' };
+    }
+    
+    const randomAvatar = predefinedAvatars[Math.floor(Math.random() * predefinedAvatars.length)];
+
+    const newUser: User & { password?: string } = {
+        id: email,
+        name: `${firstName} ${lastName}`,
+        password,
+        departmentId,
+        avatar: randomAvatar,
+        steps: { daily: 0, weekly: 0, total: 0 },
+        dailyGoal: 10000,
+        role: 'user',
+        mustChangePassword: true,
+    };
+
+    users.push(newUser);
+    revalidatePath('/dashboard/admin');
+    return { success: true };
+}
+
+export async function adminCreateDepartmentAction(prevState: unknown, data: FormData) {
+    const { currentUser } = await getAuth();
+    if (currentUser?.role !== 'admin') {
+        return { success: false, error: 'Unauthorized action.' };
+    }
+    
+    const name = data.get('name') as string;
+
+    if (!name) {
+        return { success: false, error: 'Department name is required.' };
+    }
+    
+    if (departments.some(d => d.name.toLowerCase() === name.toLowerCase())) {
+        return { success: false, error: 'A department with this name already exists.' };
+    }
+
+    const newDepartment: Department = {
+        id: name.toLowerCase().replace(/\s+/g, '-'),
+        name,
+    };
+
+    departments.push(newDepartment);
+    revalidatePath('/dashboard/admin');
+    return { success: true };
+}
+
+export async function adminUpdateUserDepartmentAction(prevState: unknown, data: FormData) {
+    const { currentUser } = await getAuth();
+    if (currentUser?.role !== 'admin') {
+        return { success: false, error: 'Unauthorized action.' };
+    }
+    
+    const userId = data.get('userId') as string;
+    const departmentId = data.get('departmentId') as string;
+
+    if (!userId || !departmentId) {
+        return { success: false, error: 'User and department are required.' };
+    }
+    
+    const userIndex = users.findIndex(u => u.id === userId);
+    if (userIndex === -1) {
+        return { success: false, error: 'User not found.' };
+    }
+
+    users[userIndex].departmentId = departmentId;
+    revalidatePath('/dashboard/admin');
+    revalidatePath('/dashboard'); // for leaderboards
+    return { success: true };
+}
+
+
 export async function deleteUserAction(userId: string) {
     const { currentUser: adminUser } = await getAuth();
     if (adminUser?.role !== 'admin') {
@@ -157,7 +278,7 @@ export async function deleteUserAction(userId: string) {
     }
 
     users.splice(userIndex, 1);
-
+    revalidatePath('/dashboard/admin');
     return { success: true };
 }
 
