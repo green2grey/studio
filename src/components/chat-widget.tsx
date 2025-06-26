@@ -62,6 +62,7 @@ export function ChatWidget({
       </SheetTrigger>
       <SheetContent className="w-full sm:max-w-md p-0 flex flex-col" side="right">
         <SheetHeader className="p-4 pb-2 border-b">
+           <SheetTitle className="sr-only">Chat Panel</SheetTitle>
            <div className="grid grid-cols-2 gap-2">
             <Button
               variant={activeChat === 'department' ? 'default' : 'outline'}
