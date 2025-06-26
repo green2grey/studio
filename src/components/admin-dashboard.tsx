@@ -26,15 +26,10 @@ export function AdminDashboard({
   supportThreads: initialThreads,
 }: AdminDashboardProps) {
   const [users, setUsers] = useState(initialUsers);
-  const [supportThreads, setSupportThreads] = useState(initialThreads);
 
   useEffect(() => {
     setUsers(initialUsers);
   }, [initialUsers]);
-
-  useEffect(() => {
-    setSupportThreads(initialThreads);
-  }, [initialThreads]);
 
   const onUserDeleted = (userId: string) => {
     setUsers((currentUsers) => currentUsers.filter((u) => u.id !== userId));
@@ -68,7 +63,7 @@ export function AdminDashboard({
         </div>
       </TabsContent>
       <TabsContent value="tickets" className="mt-4">
-        <SupportTickets initialThreads={supportThreads} />
+        <SupportTickets initialThreads={initialThreads} />
       </TabsContent>
     </Tabs>
   );
