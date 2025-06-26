@@ -7,20 +7,12 @@ import {
 } from '@/app/actions';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
-import { MessageCircle, Send, Loader2 } from 'lucide-react';
+import { Send, Loader2 } from 'lucide-react';
 import { useEffect, useRef, useState, useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
 
@@ -49,8 +41,7 @@ export function DepartmentChat({
 }: DepartmentChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [sendError, setSendError] = useState<string | null>(null);
-
+  
   const [state, formAction] = useActionState(sendDepartmentMessageAction, null);
 
   const { toast } = useToast();
@@ -92,83 +83,71 @@ export function DepartmentChat({
             setMessages(prev => [...prev, state.data!]);
         }
         formRef.current?.reset();
-        setSendError(null);
-    }
-    if (state && !state.success && state.error) {
-        setSendError(state.error);
     }
   }, [state, messages]);
 
 
   return (
-    <Card className="flex flex-col h-full border-0 shadow-none rounded-none">
-      <CardHeader>
-        <CardTitle className="font-headline flex items-center gap-2">
-          <MessageCircle className="text-primary" /> {department.name} Chat
-        </CardTitle>
-        <CardDescription>
-          Discuss strategies and cheer on your teammates.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="flex-1 overflow-hidden p-0">
-        <ScrollArea className="h-full p-6" ref={scrollAreaRef}>
-          {isLoading ? (
-            <div className="flex items-center justify-center h-full">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
-          ) : messages.length === 0 ? (
-            <div className="flex items-center justify-center h-full">
-                <p className="text-muted-foreground">No messages yet. Start the conversation!</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={cn(
-                    'flex items-end gap-2',
-                    message.senderId === currentUser.id && 'justify-end'
-                  )}
-                >
-                  {message.senderId !== currentUser.id && (
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={message.senderAvatar} data-ai-hint="profile person" />
-                      <AvatarFallback>
-                        {message.senderName.slice(0, 2)}
-                      </AvatarFallback>
-                    </Avatar>
-                  )}
-                  <div
-                    className={cn(
-                      'max-w-xs rounded-lg p-3',
-                      message.senderId === currentUser.id
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-muted'
-                    )}
-                  >
-                    <p className="text-sm font-semibold mb-1">
-                      {message.senderId === currentUser.id ? 'You' : message.senderName}
-                    </p>
-                    <p className="text-sm">{message.content}</p>
-                    <p className="text-xs opacity-70 mt-1 text-right">
-                        {formatDistanceToNow(new Date(message.timestamp), { addSuffix: true })}
-                    </p>
-                  </div>
-                  {message.senderId === currentUser.id && (
-                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={currentUser.avatar} data-ai-hint="profile person" />
-                      <AvatarFallback>
-                        {currentUser.name.slice(0, 2)}
-                      </AvatarFallback>
-                    </Avatar>
-                  )}
+    <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 overflow-auto">
+            <ScrollArea className="h-full p-6" ref={scrollAreaRef}>
+            {isLoading ? (
+                <div className="flex items-center justify-center h-full">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                 </div>
-              ))}
-            </div>
-          )}
-        </ScrollArea>
-      </CardContent>
-      <CardFooter className="border-t pt-6">
+            ) : messages.length === 0 ? (
+                <div className="flex items-center justify-center h-full">
+                    <p className="text-muted-foreground">No messages yet. Start the conversation!</p>
+                </div>
+            ) : (
+                <div className="space-y-4">
+                {messages.map((message) => (
+                    <div
+                    key={message.id}
+                    className={cn(
+                        'flex items-end gap-2',
+                        message.senderId === currentUser.id && 'justify-end'
+                    )}
+                    >
+                    {message.senderId !== currentUser.id && (
+                        <Avatar className="h-8 w-8">
+                        <AvatarImage src={message.senderAvatar} data-ai-hint="profile person" />
+                        <AvatarFallback>
+                            {message.senderName.slice(0, 2)}
+                        </AvatarFallback>
+                        </Avatar>
+                    )}
+                    <div
+                        className={cn(
+                        'max-w-xs rounded-lg p-3',
+                        message.senderId === currentUser.id
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-muted'
+                        )}
+                    >
+                        <p className="text-sm font-semibold mb-1">
+                        {message.senderId === currentUser.id ? 'You' : message.senderName}
+                        </p>
+                        <p className="text-sm">{message.content}</p>
+                        <p className="text-xs opacity-70 mt-1 text-right">
+                            {formatDistanceToNow(new Date(message.timestamp), { addSuffix: true })}
+                        </p>
+                    </div>
+                    {message.senderId === currentUser.id && (
+                        <Avatar className="h-8 w-8">
+                        <AvatarImage src={currentUser.avatar} data-ai-hint="profile person" />
+                        <AvatarFallback>
+                            {currentUser.name.slice(0, 2)}
+                        </AvatarFallback>
+                        </Avatar>
+                    )}
+                    </div>
+                ))}
+                </div>
+            )}
+            </ScrollArea>
+        </div>
+      <div className="border-t p-6 bg-background">
         <form action={formAction} ref={formRef} className="flex w-full items-center gap-2">
           <Input
             name="content"
@@ -178,10 +157,10 @@ export function DepartmentChat({
           <Input type="hidden" name="departmentId" value={department.id} />
           <SubmitButton />
         </form>
-      </CardFooter>
-      {sendError && (
-        <p className="text-xs text-destructive px-6 pb-2 -mt-4">{sendError}</p>
-      )}
-    </Card>
+         {state && !state.success && state.error && (
+            <p className="text-xs text-destructive pt-2">{state.error}</p>
+        )}
+      </div>
+    </div>
   );
 }

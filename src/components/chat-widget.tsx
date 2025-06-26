@@ -5,6 +5,9 @@ import { Button } from '@/components/ui/button';
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { DepartmentChat } from '@/components/department-chat';
@@ -47,6 +50,14 @@ export function ChatWidget({ user, department }: ChatWidgetProps) {
         </Button>
       </SheetTrigger>
       <SheetContent className="w-full sm:max-w-md p-0 flex flex-col" side="right">
+        <SheetHeader className="p-6 pb-4 border-b">
+          <SheetTitle className="font-headline flex items-center gap-2">
+            <MessageCircle className="text-primary" /> {department.name} Chat
+          </SheetTitle>
+          <SheetDescription>
+            Discuss strategies and cheer on your teammates.
+          </SheetDescription>
+        </SheetHeader>
         <DepartmentChat department={department} currentUser={user} />
       </SheetContent>
     </Sheet>
