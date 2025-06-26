@@ -1,13 +1,13 @@
 'use client';
 
-import { useFormState, useFormStatus } from 'react-dom';
+import { useFormStatus } from 'react-dom';
 import { verifyEmailAction } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useActionState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 import { Terminal } from 'lucide-react';
@@ -22,7 +22,7 @@ function SubmitButton() {
 }
 
 export function VerifyEmailForm() {
-  const [state, formAction] = useFormState(verifyEmailAction, null);
+  const [state, formAction] = useActionState(verifyEmailAction, null);
   const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get('email');
