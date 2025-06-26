@@ -12,6 +12,10 @@ export interface Department {
   name: string;
 }
 
+// This is a mock in-memory store for pending verifications.
+// In a real app, this would be a database table with an expiration timestamp.
+export const pendingVerifications = new Map<string, { code: string; user: Omit<User, 'id'> & { password?: string }, timestamp: number }>();
+
 export const departments: Department[] = [
   { id: 'eng', name: 'Engineering' },
   { id: 'mkt', name: 'Marketing' },
@@ -19,28 +23,26 @@ export const departments: Department[] = [
   { id: 'hr', name: 'Human Resources' },
 ];
 
-export const users: User[] = [
-  // Current User
-  { id: 'u1', name: 'Alex Williams', avatar: 'https://placehold.co/100x100.png', "data-ai-hint": "profile person", steps: 8543, dailyGoal: 10000, departmentId: 'eng' },
-
+// Note: Passwords are in plain text for this mock.
+// In a real app, you should NEVER store plain-text passwords.
+export let users: (User & { password?: string })[] = [
   // Engineering
-  { id: 'u2', name: 'Brianna Smith', avatar: 'https://placehold.co/100x100.png', "data-ai-hint": "profile woman", steps: 12345, dailyGoal: 8000, departmentId: 'eng' },
-  { id: 'u3', name: 'Charlie Brown', avatar: 'https://placehold.co/100x100.png', "data-ai-hint": "profile man", steps: 7654, dailyGoal: 9000, departmentId: 'eng' },
+  { id: 'u1', name: 'Alex Williams', password: 'password123', avatar: 'https://placehold.co/100x100.png', steps: 8543, dailyGoal: 10000, departmentId: 'eng' },
+  { id: 'u2', name: 'Brianna Smith', password: 'password123', avatar: 'https://placehold.co/100x100.png', steps: 12345, dailyGoal: 8000, departmentId: 'eng' },
+  { id: 'u3', name: 'Charlie Brown', password: 'password123', avatar: 'https://placehold.co/100x100.png', steps: 7654, dailyGoal: 9000, departmentId: 'eng' },
 
   // Marketing
-  { id: 'u4', name: 'Diana Prince', avatar: 'https://placehold.co/100x100.png', "data-ai-hint": "professional woman", steps: 15234, dailyGoal: 12000, departmentId: 'mkt' },
-  { id: 'u5', name: 'Ethan Hunt', avatar: 'https://placehold.co/100x100.png', "data-ai-hint": "professional man", steps: 6789, dailyGoal: 7000, departmentId: 'mkt' },
-  { id: 'u6', name: 'Fiona Glenanne', avatar: 'https://placehold.co/100x100.png', "data-ai-hint": "smiling woman", steps: 9876, dailyGoal: 10000, departmentId: 'mkt' },
+  { id: 'u4', name: 'Diana Prince', password: 'password123', avatar: 'https://placehold.co/100x100.png', steps: 15234, dailyGoal: 12000, departmentId: 'mkt' },
+  { id: 'u5', name: 'Ethan Hunt', password: 'password123', avatar: 'https://placehold.co/100x100.png', steps: 6789, dailyGoal: 7000, departmentId: 'mkt' },
+  { id: 'u6', name: 'Fiona Glenanne', password: 'password123', avatar: 'https://placehold.co/100x100.png', steps: 9876, dailyGoal: 10000, departmentId: 'mkt' },
 
   // Sales
-  { id: 'u7', name: 'George Costanza', avatar: 'https://placehold.co/100x100.png', "data-ai-hint": "man portrait", steps: 18001, dailyGoal: 15000, departmentId: 'sales' },
-  { id: 'u8', name: 'Hannah Montana', avatar: 'https://placehold.co/100x100.png', "data-ai-hint": "woman portrait", steps: 2100, dailyGoal: 5000, departmentId: 'sales' },
+  { id: 'u7', name: 'George Costanza', password: 'password123', avatar: 'https://placehold.co/100x100.png', steps: 18001, dailyGoal: 15000, departmentId: 'sales' },
+  { id: 'u8', name: 'Hannah Montana', password: 'password123', avatar: 'https://placehold.co/100x100.png', steps: 2100, dailyGoal: 5000, departmentId: 'sales' },
 
   // HR
-  { id: 'u9', name: 'Ian Malcolm', avatar: 'https://placehold.co/100x100.png', "data-ai-hint": "happy person", steps: 11111, dailyGoal: 11000, departmentId: 'hr' },
-  { id: 'u10', name: 'Jane Doe', avatar: 'https://placehold.co/100x100.png', "data-ai-hint": "person smiling", steps: 8888, dailyGoal: 8000, departmentId: 'hr' },
+  { id: 'u9', name: 'Ian Malcolm', password: 'password123', avatar: 'https://placehold.co/100x100.png', steps: 11111, dailyGoal: 11000, departmentId: 'hr' },
+  { id: 'u10', name: 'Jane Doe', password: 'password123', avatar: 'https://placehold.co/100x100.png', steps: 8888, dailyGoal: 8000, departmentId: 'hr' },
 ];
-
-export const currentUser = users[0];
 
 export const CHALLENGE_TARGET_STEPS = 250000;
