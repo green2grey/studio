@@ -4,11 +4,13 @@
 import { cookies } from 'next/headers'
 import { users } from './data'
 import type { User } from './data'
+import { unstable_noStore as noStore } from 'next/cache';
 
 export async function getAuth(): Promise<{
   currentUser: (User & { password?: string }) | null;
   originalUser: (User & { password?: string }) | null;
 }> {
+  noStore();
   const originalUserId = cookies().get('auth_token')?.value
   const impersonatedUserId = cookies().get('impersonation_token')?.value
 
