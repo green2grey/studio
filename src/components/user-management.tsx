@@ -23,7 +23,7 @@ import {
 import { TableCell, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
 import type { User } from '@/lib/data';
-import { KeyRound, MoreHorizontal, Trash2, UserSwitch } from 'lucide-react';
+import { KeyRound, MoreHorizontal, Trash2, ArrowRightLeft } from 'lucide-react';
 
 type UserWithDept = User & { departmentName: string };
 
@@ -96,7 +96,7 @@ export function UserManagement({ users, onUserDeleted, adminUser }: UserManageme
                       <input type="hidden" name="userId" value={user.id} />
                       <DropdownMenuItem asChild className="cursor-pointer">
                           <button type="submit" className="w-full text-left flex items-center">
-                              <UserSwitch className="mr-2 h-4 w-4" />
+                              <ArrowRightLeft className="mr-2 h-4 w-4" />
                               <span>Impersonate</span>
                           </button>
                       </DropdownMenuItem>
