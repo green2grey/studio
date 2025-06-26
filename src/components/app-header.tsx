@@ -1,3 +1,5 @@
+'use client';
+
 import type { User } from "@/lib/data";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "./ui/button";
@@ -9,12 +11,101 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { logoutAction } from "@/app/actions";
-import { LogOut, Shield } from "lucide-react";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog"
+import { logoutAction, updateAvatarAction } from "@/app/actions";
+import { LogOut, Shield, User as UserIcon } from "lucide-react";
 import Link from "next/link";
+import { useState, useActionState, useEffect } from "react";
+import { predefinedAvatars } from "@/lib/data";
+import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
+import { useFormStatus } from "react-dom";
 
 interface AppHeaderProps {
   user: User;
+}
+
+function SubmitButton() {
+    const { pending } = useFormStatus();
+    return (
+      <Button type="submit" disabled={pending}>
+        {pending ? 'Saving...' : 'Save Changes'}
+      </Button>
+    );
+}
+
+function ChangeAvatarDialog({ user }: { user: User }) {
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [selectedAvatar, setSelectedAvatar] = useState(user.avatar);
+    const [state, formAction] = useActionState(updateAvatarAction, null);
+    const { toast } = useToast();
+
+    useEffect(() => {
+        if (state?.success) {
+            toast({
+                title: "Avatar Updated",
+                description: "Your new profile picture has been saved.",
+            });
+            setDialogOpen(false);
+        }
+        if (state?.error) {
+            toast({
+                variant: 'destructive',
+                title: 'Error',
+                description: state.error,
+            });
+        }
+    }, [state, toast]);
+    
+    return (
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="cursor-pointer">
+                    <UserIcon className="mr-2 h-4 w-4" />
+                    <span>Change Avatar</span>
+                </DropdownMenuItem>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+                <form action={formAction}>
+                    <DialogHeader>
+                        <DialogTitle>Choose your avatar</DialogTitle>
+                        <DialogDescription>
+                            Select a new avatar from the options below. Click save when you're done.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid grid-cols-4 gap-4 py-4">
+                        {predefinedAvatars.map((avatarUrl) => (
+                            <div 
+                                key={avatarUrl}
+                                className="flex justify-center"
+                                onClick={() => setSelectedAvatar(avatarUrl)}
+                            >
+                                <Avatar className={cn(
+                                    "h-16 w-16 cursor-pointer ring-offset-background transition-all ring-offset-2",
+                                    selectedAvatar === avatarUrl ? 'ring-2 ring-primary' : 'ring-0'
+                                )}>
+                                    <AvatarImage src={avatarUrl} alt="Avatar" data-ai-hint="avatar" />
+                                    <AvatarFallback>AV</AvatarFallback>
+                                </Avatar>
+                            </div>
+                        ))}
+                    </div>
+                    <input type="hidden" name="avatarUrl" value={selectedAvatar} />
+                    <DialogFooter>
+                        <SubmitButton />
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
+    )
 }
 
 export function AppHeader({ user }: AppHeaderProps) {
@@ -36,6 +127,7 @@ export function AppHeader({ user }: AppHeaderProps) {
                 <p className="text-xs text-muted-foreground font-normal">{user.id}</p>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
+              <ChangeAvatarDialog user={user} />
               {user.role === 'admin' && (
                   <Link href="/dashboard/admin">
                     <DropdownMenuItem className="cursor-pointer">
@@ -44,6 +136,7 @@ export function AppHeader({ user }: AppHeaderProps) {
                     </DropdownMenuItem>
                   </Link>
               )}
+              <DropdownMenuSeparator />
               <form action={logoutAction} className="w-full">
                 <Button type="submit" variant="ghost" className="w-full justify-start p-0">
                   <DropdownMenuItem className="w-full cursor-pointer">

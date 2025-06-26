@@ -1,7 +1,7 @@
 'use server';
 
 import { getPersonalizedMotivation, PersonalizedMotivationInput } from '@/ai/flows/personalized-motivation';
-import { users as usersDB, pendingVerifications, User, messages as messagesDB, Message } from '@/lib/data';
+import { users as usersDB, pendingVerifications, User, messages as messagesDB, Message, predefinedAvatars } from '@/lib/data';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth';
@@ -43,9 +43,11 @@ export async function signupAction(prevState: unknown, data: FormData) {
     const code = '123456'; // Mock verification code
     console.log(`Verification code for ${email}: ${code}`);
 
+    const randomAvatar = predefinedAvatars[Math.floor(Math.random() * predefinedAvatars.length)];
+
     pendingVerifications.set(email, {
         code,
-        user: { name, avatar: `https://placehold.co/100x100.png`, steps: { daily: 0, weekly: 0, total: 0}, dailyGoal: 10000, departmentId, password, role: 'user' },
+        user: { name, avatar: randomAvatar, steps: { daily: 0, weekly: 0, total: 0}, dailyGoal: 10000, departmentId, password, role: 'user' },
         timestamp: Date.now(),
     });
 
@@ -108,6 +110,37 @@ export async function loginAction(prevState: unknown, data: FormData) {
 export async function logoutAction() {
     cookies().delete('auth_token');
     redirect('/login');
+}
+
+// User Actions
+export async function updateAvatarAction(prevState: unknown, formData: FormData) {
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
+      return { success: false, error: 'You must be logged in to do that.' };
+    }
+  
+    const avatarUrl = formData.get('avatarUrl') as string;
+    if (!avatarUrl || !predefinedAvatars.includes(avatarUrl)) {
+      return { success: false, error: 'Invalid avatar selected.' };
+    }
+  
+    const userIndex = users.findIndex((u) => u.id === currentUser.id);
+    if (userIndex !== -1) {
+      users[userIndex].avatar = avatarUrl;
+    
+      // Also update the avatar in past chat messages for consistency
+      messages.forEach((message, index) => {
+          if (message.senderId === currentUser.id) {
+              messages[index].senderAvatar = avatarUrl;
+          }
+      });
+
+    } else {
+      return { success: false, error: 'User not found.' };
+    }
+    
+    revalidatePath('/dashboard');
+    return { success: true };
 }
 
 // Admin Actions
