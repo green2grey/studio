@@ -11,7 +11,11 @@ export default async function DashboardLayout({
   const { currentUser, originalUser } = await getAuth();
 
   if (!currentUser) {
-    redirect('/login');
+    // If getAuth returns no user, but middleware let us through,
+    // it means the auth cookie is invalid (e.g., user was deleted).
+    // We redirect to a dedicated logout route to clear the bad cookie
+    // and prevent a redirect loop.
+    redirect('/logout');
   }
 
   return (

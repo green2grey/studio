@@ -21,9 +21,10 @@ export async function getAuth(): Promise<{
   const loggedInUser = users.find(u => u.id === userId)
 
   if (!loggedInUser) {
-    // Clean up bad cookies
-    cookies().delete('auth_token');
-    cookies().delete('dev_user_view');
+    // User ID from cookie doesn't exist in our data.
+    // This function cannot modify cookies, as it's called during render.
+    // The calling component (e.g., a layout or page) must handle
+    // redirecting the user to log out.
     return { currentUser: null, originalUser: null }
   }
 
