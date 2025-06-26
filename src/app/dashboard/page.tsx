@@ -7,7 +7,6 @@ import {
 } from '@/lib/data';
 import { getCurrentUser } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import { DepartmentChat } from '@/components/department-chat';
 
 
 export default async function DashboardPage() {
@@ -38,10 +37,7 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-8">
       <MyStats user={currentUserWithDept} />
-      <div className="grid gap-8 lg:grid-cols-2 lg:items-start">
-        <Leaderboards departments={departmentsWithMembers} currentUser={currentUser} />
-        <DepartmentChat department={currentUserDept} currentUser={currentUser} />
-      </div>
+      <Leaderboards departments={departmentsWithMembers} currentUser={currentUser} />
     </div>
   );
 }

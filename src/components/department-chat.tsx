@@ -101,7 +101,7 @@ export function DepartmentChat({
 
 
   return (
-    <Card className="flex flex-col h-full max-h-[70vh]">
+    <Card className="flex flex-col h-full border-0 shadow-none rounded-none">
       <CardHeader>
         <CardTitle className="font-headline flex items-center gap-2">
           <MessageCircle className="text-primary" /> {department.name} Chat
