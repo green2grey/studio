@@ -44,7 +44,7 @@ export async function signupAction(prevState: unknown, data: FormData) {
 
     pendingVerifications.set(email, {
         code,
-        user: { name, avatar: randomAvatar, steps: { daily: 0, weekly: 0, total: 0}, dailyGoal: 10000, departmentId, password, role: 'user' },
+        user: { name, avatar: randomAvatar, steps: { daily: 0, weekly: 0, total: 0, previousDaily: 0, previousWeekly: 0 }, dailyGoal: 10000, departmentId, password, role: 'user' },
         timestamp: Date.now(),
     });
 
@@ -172,6 +172,37 @@ export async function updatePasswordAction(prevState: unknown, data: FormData) {
     return { success: true };
 }
 
+export async function updateStepsAction(prevState: unknown, data: FormData) {
+    const { currentUser } = await getAuth();
+    if (!currentUser) {
+      return { success: false, error: 'You must be logged in to do that.' };
+    }
+    
+    const stepsStr = data.get('steps') as string;
+    const newDailySteps = parseInt(stepsStr, 10);
+    
+    if (isNaN(newDailySteps) || newDailySteps < 0) {
+        return { success: false, error: 'Please enter a valid number of steps.' };
+    }
+
+    const userIndex = users.findIndex((u) => u.id === currentUser.id);
+    if (userIndex === -1) {
+      return { success: false, error: 'User not found.' };
+    }
+    
+    const oldDailySteps = users[userIndex].steps.daily || 0;
+    
+    // Update total and weekly steps based on the change in daily steps
+    users[userIndex].steps.total = (users[userIndex].steps.total - oldDailySteps) + newDailySteps;
+    users[userIndex].steps.weekly = (users[userIndex].steps.weekly - oldDailySteps) + newDailySteps;
+    
+    // Set the new daily step count
+    users[userIndex].steps.daily = newDailySteps;
+    
+    revalidatePath('/dashboard');
+    return { success: true, newDailySteps };
+}
+
 // Admin Actions
 export async function adminCreateUserAction(prevState: unknown, data: FormData) {
     const { currentUser } = await getAuth();
@@ -208,7 +239,7 @@ export async function adminCreateUserAction(prevState: unknown, data: FormData) 
         password,
         departmentId,
         avatar: randomAvatar,
-        steps: { daily: 0, weekly: 0, total: 0 },
+        steps: { daily: 0, weekly: 0, total: 0, previousDaily: 0, previousWeekly: 0 },
         dailyGoal: 10000,
         role: newUserRole,
         mustChangePassword: true,
