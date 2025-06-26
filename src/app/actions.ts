@@ -1,12 +1,14 @@
 'use server';
 
 import { getPersonalizedMotivation, PersonalizedMotivationInput } from '@/ai/flows/personalized-motivation';
-import { users as usersDB, pendingVerifications, User } from '@/lib/data';
+import { users as usersDB, pendingVerifications, User, messages as messagesDB, Message } from '@/lib/data';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth';
+import { revalidatePath } from 'next/cache';
 
 let users = usersDB;
+let messages = messagesDB;
 
 export async function getMotivationAction(input: PersonalizedMotivationInput) {
     try {
@@ -43,7 +45,7 @@ export async function signupAction(prevState: unknown, data: FormData) {
 
     pendingVerifications.set(email, {
         code,
-        user: { name, avatar: `https://placehold.co/100x100.png`, steps: 0, dailyGoal: 10000, departmentId, password, role: 'user' },
+        user: { name, avatar: `https://placehold.co/100x100.png`, steps: { daily: 0, weekly: 0, total: 0}, dailyGoal: 10000, departmentId, password, role: 'user' },
         timestamp: Date.now(),
     });
 
@@ -145,4 +147,46 @@ export async function resetPasswordAction(userId: string) {
     console.log(`Password for user ${userId} has been reset to "${newPassword}"`);
 
     return { success: true, message: `Password reset successfully to "${newPassword}".` };
+}
+
+// Chat Actions
+export async function getDepartmentMessagesAction(departmentId: string) {
+    const currentUser = await getCurrentUser();
+    if (!currentUser || currentUser.departmentId !== departmentId) {
+        return { success: false, error: 'Unauthorized' };
+    }
+    const departmentMessages = messages
+        .filter(m => m.departmentId === departmentId)
+        .sort((a, b) => a.timestamp - b.timestamp);
+    return { success: true, data: departmentMessages };
+}
+
+export async function sendDepartmentMessageAction(prevState: unknown, formData: FormData) {
+    const content = formData.get('content') as string;
+    const departmentId = formData.get('departmentId') as string;
+    
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
+        return { success: false, error: 'You must be logged in to send a message.' };
+    }
+    if (!content.trim() || !departmentId) {
+        return { success: false, error: 'Message content cannot be empty.' };
+    }
+    if (currentUser.departmentId !== departmentId) {
+        return { success: false, error: 'You can only send messages to your own department.' };
+    }
+
+    const newMessage: Message = {
+        id: `msg-${Date.now()}-${Math.random()}`,
+        senderId: currentUser.id,
+        senderName: currentUser.name,
+        senderAvatar: currentUser.avatar,
+        departmentId: departmentId,
+        content: content.trim(),
+        timestamp: Date.now(),
+    };
+
+    messages.push(newMessage);
+    revalidatePath('/dashboard'); // To update the chat for other users in a real-time-ish way
+    return { success: true, data: newMessage };
 }

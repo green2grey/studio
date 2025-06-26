@@ -7,6 +7,7 @@ import {
 } from '@/lib/data';
 import { getCurrentUser } from '@/lib/auth';
 import { redirect } from 'next/navigation';
+import { DepartmentChat } from '@/components/department-chat';
 
 
 export default async function DashboardPage() {
@@ -24,18 +25,23 @@ export default async function DashboardPage() {
 
   departmentsWithMembers.sort((a, b) => b.totalSteps - a.totalSteps);
 
+  const currentUserDept = departmentsWithMembers.find(d => d.id === currentUser.departmentId)!;
+
   const currentUserWithDept = {
     ...currentUser,
-    department: initialDepts.find(d => d.id === currentUser.departmentId)!,
+    department: currentUserDept,
     departmentRank: departmentsWithMembers.findIndex(d => d.id === currentUser.departmentId) + 1,
-    departmentTotalSteps: departmentsWithMembers.find(d => d.id === currentUser.departmentId)!.totalSteps,
+    departmentTotalSteps: currentUserDept.totalSteps,
     challengeTargetSteps: CHALLENGE_TARGET_STEPS,
   };
 
   return (
     <div className="space-y-8">
       <MyStats user={currentUserWithDept} />
-      <Leaderboards departments={departmentsWithMembers} currentUser={currentUser} />
+      <div className="grid gap-8 lg:grid-cols-2 lg:items-start">
+        <Leaderboards departments={departmentsWithMembers} currentUser={currentUser} />
+        <DepartmentChat department={currentUserDept} currentUser={currentUser} />
+      </div>
     </div>
   );
 }

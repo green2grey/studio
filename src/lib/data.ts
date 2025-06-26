@@ -17,6 +17,17 @@ export interface Department {
   name: string;
 }
 
+export interface Message {
+  id: string;
+  senderId: string;
+  senderName: string;
+  senderAvatar: string;
+  departmentId: string;
+  content: string;
+  timestamp: number;
+}
+
+
 // This is a mock in-memory store for pending verifications.
 // In a real app, this would be a database table with an expiration timestamp.
 export const pendingVerifications = new Map<string, { code: string; user: Omit<User, 'id'> & { password?: string }, timestamp: number }>();
@@ -48,6 +59,14 @@ export let users: (User & { password?: string })[] = [
   // HR
   { id: 'ian.malcolm@dhs.lacounty.gov', name: 'Ian Malcolm', password: 'password123', avatar: 'https://placehold.co/100x100.png', steps: { daily: 11111, weekly: 55555, total: 111110 }, dailyGoal: 11000, departmentId: 'hr', role: 'user' },
   { id: 'jane.doe@dhs.lacounty.gov', name: 'Jane Doe', password: 'password123', avatar: 'https://placehold.co/100x100.png', steps: { daily: 8888, weekly: 44444, total: 88880 }, dailyGoal: 8000, departmentId: 'hr', role: 'user' },
+];
+
+export let messages: Message[] = [
+  { id: 'msg1', senderId: 'babken.egoian@dhs.lacounty.gov', senderName: 'Babken Egoian', senderAvatar: 'https://placehold.co/100x100.png', departmentId: 'eng', content: 'Hey Engineering team! How is everyone doing on the step challenge?', timestamp: Date.now() - 1000 * 60 * 60 * 2 },
+  { id: 'msg2', senderId: 'brianna.smith@dhs.lacounty.gov', senderName: 'Brianna Smith', senderAvatar: 'https://placehold.co/100x100.png', departmentId: 'eng', content: "Doing great! Just hit my daily goal.", timestamp: Date.now() - 1000 * 60 * 55 },
+  { id: 'msg3', senderId: 'charlie.brown@dhs.lacounty.gov', senderName: 'Charlie Brown', senderAvatar: 'https://placehold.co/100x100.png', departmentId: 'eng', content: "Almost there! Need a final push.", timestamp: Date.now() - 1000 * 60 * 30 },
+  { id: 'msg4', senderId: 'diana.prince@dhs.lacounty.gov', senderName: 'Diana Prince', senderAvatar: 'https://placehold.co/100x100.png', departmentId: 'mkt', content: 'Marketing team, let\'s rally! We can catch up to Sales!', timestamp: Date.now() - 1000 * 60 * 120 },
+  { id: 'msg5', senderId: 'george.costanza@dhs.lacounty.gov', senderName: 'George Costanza', senderAvatar: 'https://placehold.co/100x100.png', departmentId: 'sales', content: 'We are unstoppable!', timestamp: Date.now() - 1000 * 60 * 10 },
 ];
 
 export const CHALLENGE_TARGET_STEPS = 250000;
